@@ -1,217 +1,171 @@
 %-------------------------
-% Resume in Latex
+% Modern Two-Column Resume
 % Author: Markus Heimerl
 %-------------------------
 
-\documentclass[letterpaper,11pt]{article}
+\documentclass[a4paper,10pt]{article}
 
-\usepackage{latexsym}
-\usepackage[empty]{fullpage}
-\usepackage{titlesec}
-\usepackage{marvosym}
-\usepackage[usenames,dvipsnames]{color}
-\usepackage{verbatim}
-\usepackage{enumitem}
-\usepackage[hidelinks]{hyperref}
-\usepackage{fancyhdr}
-\usepackage[english]{babel}
-\usepackage{tabularx}
-\usepackage{fontawesome5}
-\usepackage{multicol}
-\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{geometry}
 \usepackage{xcolor}
+\usepackage{fontawesome5}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{paracol}
 
-% Adjust margins
-\geometry{left=0.5in, top=0.5in, right=0.5in, bottom=0.5in, footskip=.25in}
+% Optimized page setup for exactly one page
+\geometry{
+    a4paper,
+    left=0.7cm,
+    right=0.7cm,
+    top=0.6cm,
+    bottom=0.6cm
+}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
 
-% Custom colors
-\definecolor{primary}{RGB}{0, 73, 122}
-\definecolor{secondary}{RGB}{83, 83, 83}
-\definecolor{accent}{RGB}{0, 102, 204}
+% Colors
+\definecolor{primaryblue}{RGB}{41, 128, 185}
+\definecolor{darkgray}{RGB}{54, 69, 79}
+\definecolor{lightgray}{RGB}{120, 120, 120}
+\definecolor{backgroundgray}{RGB}{245, 245, 245}
 
-% Custom commands
-\newcommand{\headerspace}{\vspace{-0.25em}}
-\newcommand{\sectionspace}{\vspace{0.5em}}
-\newcommand{\entryspace}{\vspace{0.2em}}
-
-% Section formatting
-\titleformat{\section}{\color{primary}\large\bfseries}
-{}{0em}{}[\color{primary}\titlerule]
-\titlespacing{\section}{0pt}{5pt}{5pt}
-
-% Header & Footer
-\pagestyle{fancy}
-\fancyhf{}
-\renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}
-
-% Create custom entry environment
-\newcommand{\cventry}[4]{
-  \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
-    \textbf{#1} & \textcolor{secondary}{#2} \\
-    \textcolor{accent}{\textit{#3}} & \textcolor{secondary}{\textit{#4}} \\
-  \end{tabular*}\entryspace
+% Hyperlink setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primaryblue,
+    urlcolor=primaryblue,
 }
 
-% Custom skill bar
-\newcommand{\skillbar}[2]{
-  \textbf{#1} & 
-  \begin{tikzpicture}[scale=0.6]
-    \foreach \x in {1,...,5}
-    {
-      \ifnum \x<=#2
-        \draw[fill=primary] (\x-1,0) rectangle (\x,0.4);
-      \else
-        \draw[fill=secondary!30] (\x-1,0) rectangle (\x,0.4);
-      \fi
-    }
-  \end{tikzpicture} \\
+% Custom commands with expanded spacing to fill page
+\newcommand{\cvsection}[1]{
+    \vspace{12pt}
+    {\large\bfseries\color{darkgray} #1}
+    \vspace{4pt}
+    \hrule
+    \vspace{8pt}
+}
+
+\newcommand{\cvitem}[2]{
+    \textbf{\color{darkgray}#1} \\
+    \textcolor{lightgray}{\small #2} \\[5pt]
+}
+
+\newcommand{\cventry}[4]{
+    \vspace{3pt}
+    \textbf{\color{darkgray}#1} \hfill \textcolor{lightgray}{\small #2} \\
+    \textcolor{primaryblue}{\textit{\small #3}} \\
+    \vspace{3pt}
+    {\small #4}
+    \vspace{8pt}
 }
 
 \begin{document}
 
-%------------------------
-% HEADER
-%------------------------
+% Two column layout
+\columnratio{0.32}
+\setlength{\columnsep}{0.8cm}
+\begin{paracol}{2}
+
+% LEFT COLUMN with background
+\backgroundcolor{c[0](0pt,\textheight)}{backgroundgray}
+
+\vspace{0.5cm}
+
 \begin{center}
-    {\LARGE \textbf{\textcolor{primary}{Markus Heimerl}}} \\ \headerspace
-    {\normalsize \textcolor{secondary}{Embedded Systems Engineer \& AI Implementation Specialist}} \\ \headerspace
-    \vspace{0.3em} % Added vertical space here
-    \begin{tabular}{ll}
-        \faEnvelope\, \href{mailto:info@markusheimerl.com}{info@markusheimerl.com} & 
-        \faGithub\, \href{https://github.com/markusheimerl}{github.com/markusheimerl} \\
-        \faGlobe\, \href{https://markusheimerl.com}{markusheimerl.com} & 
-        \faLinkedin\, \href{https://linkedin.com/in/markusheimerl}{linkedin.com/in/markusheimerl} \\
-        \multicolumn{2}{l}{\faMobile*\, +49 176 78227914}
-    \end{tabular}
+    {\LARGE\bfseries\color{darkgray} Markus} \\[4pt]
+    {\LARGE\bfseries\color{primaryblue} Heimerl} \\[8pt]
+    {\small\color{darkgray} Systems Engineer}
 \end{center}
 
-%------------------------
-% PROFESSIONAL SUMMARY
-%------------------------
-\section{Professional Summary}
-Results-driven Embedded Systems Engineer with expertise at the intersection of hardware and software development. Specialized in implementing AI algorithms in constrained environments, from state space models to neural networks. Demonstrated success optimizing complex codebases and creating reliable, performant systems across automotive and aviation applications. Proven track record of improving system performance through deep technical understanding and innovative problem-solving approaches.
+\vspace{0.6cm}
 
-%------------------------
-% EXPERIENCE
-%------------------------
-\section{Professional Experience}
+\cvsection{Contact}
+\small
+\faEnvelope\, \href{mailto:info@markusheimerl.com}{info@markusheimerl.com} \\[5pt]
+\faPhone\, +49 176 78227914 \\[5pt]
+\faGithub\, \href{https://github.com/markusheimerl}{markusheimerl}
 
-\cventry{Automotive Developer}{01/2024 - Present}
-{intive GmbH}{Regensburg, Bavaria}
-\begin{itemize}[leftmargin=*, nosep]
-    \item Lead optimization of "Carmen," a critical visualization tool for BMW's ECU network communications, resulting in 30\% improved performance
-    \item Refactored complex legacy C++ codebase, implementing SOLID principles to enhance maintainability and reduce technical debt
-    \item Designed and implemented automated testing infrastructure that increased test coverage from 40\% to 85\%
-    \item Coordinated cross-functional teams to align development priorities across engineering disciplines
-\end{itemize}
+\cvsection{Technical Skills}
+\cvitem{Programming}{C/C++, Python (Pytorch/JAX),\\ VHDL/Verilog}
+\cvitem{Embedded}{Bare-metal, ARM, RISC-V}
+\cvitem{AI/ML}{State Space Models, Transformers, \\ Stochastic Methods}
+\cvitem{Hardware}{PCB Design, Digital Logic, FPGAs}
+\cvitem{Automotive}{AUTOSAR Classic, ECU Development}
+\cvitem{Tools}{Git, GitHub Platform, KiCad,\\ GNU Tools}
 
-\cventry{Software Development Engineer}{01/2023 - 12/2023}
-{VECTOR Informatik}{Regensburg, Bavaria}
-\begin{itemize}[leftmargin=*, nosep]
-    \item Architected and implemented secure flash bootloader for automotive ECUs, ensuring robust OTA update capabilities
-    \item Enhanced testing framework using Google Test, strengthening reliability of safety-critical components
-    \item Collaborated on AUTOSAR Classic implementations, ensuring standards compliance while optimizing performance
-    \item Spearheaded Git workflow improvements that reduced merge conflicts by 45\% across development teams
-\end{itemize}
+\cvsection{Languages}
+\cvitem{German}{Native Speaker}
+\cvitem{English}{C1 Level (TOEFL iBT 105/120)}
 
-\cventry{Academic Tutor - Digital Design}{03/2022 - 12/2022}
-{Ostbayerische Technische Hochschule Regensburg}{Regensburg, Bavaria}
-\begin{itemize}[leftmargin=*, nosep]
-    \item Mentored engineering students in digital logic design, VHDL implementation, and processor architecture
-    \item Developed hands-on workshops that increased practical understanding of digital system design
-    \item Created supplemental materials on circuit implementation that improved student exam performance by 15\%
-\end{itemize}
+\cvsection{Certifications}
+\textbf{Aerial Robotics} \\
+\textcolor{lightgray}{\small University of Pennsylvania (2021)}
 
-%------------------------
-% PROJECTS
-%------------------------
-\section{Technical Projects}
+\vspace{0.5cm}
 
-\cventry{Quadcopter Control System}{01/2021 - Present}
-{Personal Research Project}{github.com/markusheimerl/quad}
-\begin{itemize}[leftmargin=*, nosep]
-    \item Engineered complete flight control system including custom PCB design, firmware, and simulation environment
-    \item Implemented state space models and imitation learning for autonomous flight capabilities
-    \item Developed real-time control algorithms optimized for resource-constrained embedded systems
-    \item Created comprehensive test environments and CI/CD pipelines to ensure system reliability
-\end{itemize}
+\switchcolumn
 
-\cventry{State Space Model (SSM) Implementation}{02/2024 - Present}
-{Open Source Contribution}{github.com/markusheimerl/ssm}
-\begin{itemize}[leftmargin=*, nosep]
-    \item Developed efficient C implementation of state space models for embedded applications
-    \item Optimized matrix operations for memory-constrained environments while maintaining numerical stability
-    \item Achieved 3x performance improvement over existing implementations through careful algorithm design
-\end{itemize}
+% RIGHT COLUMN
+\vspace{0.5cm}
 
-\cventry{Small Language Model (SLM)}{01/2024 - Present}
-{Open Source Contribution}{github.com/markusheimerl/slm}
-\begin{itemize}[leftmargin=*, nosep]
-    \item Created lightweight language model implementation suitable for deployment on edge devices
-    \item Optimized inference pipeline to operate within strict memory and computational constraints
-    \item Integrated quantization techniques to reduce model size by 75\% with minimal accuracy loss
-\end{itemize}
+\cvsection{Professional Summary}
+Results-driven Embedded Systems Engineer with exceptional expertise at the intersection of hardware and software development. Specialized in implementing cutting-edge AI algorithms in constrained environments and optimizing complex systems for automotive and aviation applications. Proven excellence in technical leadership and delivering innovative solutions.
 
-%------------------------
-% EDUCATION
-%------------------------
-\section{Education}
+\cvsection{Professional Experience}
 
-\cventry{Bachelor of Science in Computer Engineering}{2018 - 2022}
-{Ostbayerische Technische Hochschule Regensburg}{Grade: 1.x/1.0}
-\begin{itemize}[leftmargin=*, nosep]
-    \item Thesis: \textit{"Development of a RISC-V RV32I Processor with VGA Interface using VHDL"}
-    \item Key coursework: Embedded Systems Design, Digital Signal Processing, Computer Architecture, Operating Systems, Robotics
-    \item Activities: Organized TEDxOTHRegensburg, participated in the university's Buddy Program for international students
-\end{itemize}
-
-%------------------------
-% TECHNICAL SKILLS
-%------------------------
-\section{Technical Expertise}
-
-\begin{multicols}{2}
-    \begin{itemize}[leftmargin=*, nosep]
-        \item \textbf{Programming Languages:} C/C++, Python, VHDL, Assembly
-        \item \textbf{Embedded Systems:} RTOS, Bare-metal, ARM, RISC-V
-        \item \textbf{AI/ML:} State Space Models, Neural Networks, Imitation Learning
-        \item \textbf{Hardware Design:} PCB Design, Digital Logic, FPGAs
-        \item \textbf{Software Engineering:} Git, CI/CD, TDD, SOLID
-        \item \textbf{Automotive:} AUTOSAR, ECU Development, Diagnostics
-        \item \textbf{Tools:} Google Test, Jira, Altium, ModelSim
-        \item \textbf{Web Technologies:} HTML/CSS, Tailwind, SupaBase
+\cventry{Automotive Developer}{May 2024 - Present}{intive GmbH, Regensburg}{
+    \begin{itemize}[leftmargin=10pt, itemsep=2pt, parsep=0pt, topsep=3pt]
+        \item Development of BMW's critical ECU network processing and visualization tool
+        \item Spearheaded refactoring effort of complex legacy codebase using agents
+        \item Coordinated cross-functional teams
     \end{itemize}
-\end{multicols}
+}
 
-%------------------------
-% LANGUAGES
-%------------------------
-\section{Languages}
-\begin{tabular}{ll}
-    German (Native) & English (C1, TOEFL iBT 105/120)
-\end{tabular}
+\cventry{Software Development Engineer}{Jul 2023 - Dec 2023}{VECTOR Informatik, Regensburg}{
+    \begin{itemize}[leftmargin=10pt, itemsep=2pt, parsep=0pt, topsep=3pt]
+        \item Participated in project focused on flash bootloader development with OTA capabilities
+        \item Contributed to development process optimization initiatives within agile framework
+        \item Collaborated with senior engineers on automotive software development best practices
+    \end{itemize}
+}
 
-%------------------------
-% CERTIFICATIONS
-%------------------------
-\section{Certifications}
-\begin{itemize}[leftmargin=*, nosep]
-    \item \textbf{Aerial Robotics} - Coursera (2021)
-\end{itemize}
+\cventry{Academic Tutor - Digital Design}{Mar 2022 - Dec 2022}{OTH Regensburg}{
+    \begin{itemize}[leftmargin=10pt, itemsep=2pt, parsep=0pt, topsep=3pt]
+        \item Supervised weekly practice sessions for digital logic design and VHDL coursework
+        \item Applied evaluation system that improved student preparation for examinations
+    \end{itemize}
+}
 
-%------------------------
-% VOLUNTEER EXPERIENCE
-%------------------------
-\section{Volunteer Experience}
+\cvsection{Key Technical Projects}
 
-\cventry{Event Organizer}{03/2019 - 08/2019}
-{TEDxOTHRegensburg}{Regensburg, Bavaria}
-\begin{itemize}[leftmargin=*, nosep]
-    \item Recruited and coached speakers, including Dr. Max Plach on CRISPR technology
-    \item Implemented online ticketing system using WordPress, streamlining attendee experience
-    \item Secured sponsorship from InterNetX GmbH through effective relationship building
-\end{itemize}
+\cventry{Quadcopter Control System}{2021 - Present}{\href{https://github.com/markusheimerl/quad}{github.com/markusheimerl/quad}}{
+    Complete flight control system with custom PCB design, state space models, and imitation learning for autonomous flight. Real-time algorithms optimized for embedded systems.
+}
 
+\cventry{State Space Model Implementation}{2024 - Present}{\href{https://github.com/markusheimerl/ssm}{github.com/markusheimerl/ssm}}{
+    Highly efficient C/CUDA implementation for embedded applications with outstanding performance improvements and numerical stability - Proven to replace Kalman Filter - PID controller combination in simulation for quadcoptor
+}
+
+\cventry{Small Language Model}{2024 - Present}{\href{https://github.com/markusheimerl/slm}{github.com/markusheimerl/slm}}{
+    Lightweight language model for neural architecture research
+}
+
+\cvsection{Education}
+
+\cventry{B.Sc. Computer Engineering}{2018 - 2022}{OTH Regensburg - 1.x / 1.0}{
+    \textbf{Thesis:} Development of a RISC-V RV32I Processor with VGA Interface using VHDL
+}
+
+\cvsection{Leadership Experience}
+
+\textbf{Event Organizer - TEDxOTHRegensburg} \hfill \textcolor{lightgray}{\small 2019} \\
+\textcolor{primaryblue}{\textit{\small TEDxOTHRegensburg}} \\
+\vspace{3pt}
+{\small Recruited Dr. Max Plach as speaker, secured sponsorship from InterNetX GmbH, implemented ticket systems.}
+
+\vspace{0.5cm}
+
+\end{paracol}
 \end{document}

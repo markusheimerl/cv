@@ -1,0 +1,189 @@
+\documentclass{article}
+\usepackage[a4paper, total={6in, 8in},bottom=2.5cm,top=3.5cm]{geometry}
+\usepackage{titling}
+\usepackage{enumitem}
+\setlength{\droptitle}{-12em}   % This is your set screw
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue,citecolor=blue]{hyperref}
+\newcommand{\mycomment}[1]{}
+
+\title{Predictive Analysis of Recipe Ratings: \\What makes a popular meal?}
+\author{Markus Heimerl (6294373)\\Olha Yarikova (5974175)\\Reshma Manjunatha Rao (5760093)}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+% Reshma's abstract
+%The significance of cooking has largely been proposed as being considerable or relatively trivial based on numerous factors. Here, we review the ratings of recipes based on their ingredients, steps, cooking time, and preparation time using a combination of regression analysis and permutation testing to verify our hypothesis. For the analysis, we have included techniques such as normalization, vectorization, and categorical encoding which resulted in providing insight into the factors that affect recipe ratings and demonstrated the potential of machine learning in predicting the popularity of culinary creations. Future work can contribute to an even more complete picture of the additional factors that may influence the process of cooking.
+
+%Olha's abstract
+%This report contains a description of our research project, including data preprocessing, methods, results and discussion. Our project aims to develop effective machine learning methods to predict an average rating of a recipe published on the recipe-sharing platform food.com. Our project included collecting and transforming data, dealing with highly imbalanced data, regression analysis, permutation testing, and predicting using neural networks. We also demonstrate the already well-known limitation of regression to achieve high prediction performance in cases where a deep stack of dense layers in neural networks is needed to improve results.
+
+%Markus abstract
+In this report we propose a method of analysis through regressions on multiple combinations of input data to determine the most significant factors for a prediction on a continuous value space. We also demonstrate the already well-known limitation of regression to achieve high prediction performance in cases where a deep stack of dense layers in neural networks is needed to improve results. As preparation we evaluate approaches to data set limitations and choose fitting methods for balancing and cleaning recipe and review data from the the recipe sharing platform food.com.
+
+\end{abstract}
+
+\section{Introduction}
+Cooking and preparing food is an activity necessary for a financially affordable and healthy life. Spending time and money cooking a meal that doesn't taste great is disappointing. Nowadays people experiment by trying new dishes using recipes available on various cooking websites. Many of these websites utilize a rating system, allowing users to rate the recipes. \\
+In our work, we use the data from a popular website food.com. We aim to predict the average rating of the recipe based on the ingredient list, cooking time, preparation time and further features. We also try to determine the features that influence the prediction quality. We utilize linear regression as a main prediction technique, since it is both widespread and simple to use. Furthermore, we use permutation analysis and neural networks. We analyse our results critically and acknowledge the limitations, proposing a way to address some of them. 
+
+\section{Methods}
+
+\subsection{Data collection \& preprocessing}
+The data collection process proved straight-forward. We downloaded three datasets\cite{kaggle:reviews}\cite{kaggle:recipes}\cite{kaggle:searchterms}, scraped from food.com, made available on Kaggle. No contingency plan was needed as no scraping was involved.\\
+During the preprocessing we used the three datasets, \textbf{recipes}, \textbf{reviews} and \textbf{recipes\_w\_search\_terms}. First we renamed the column \textit{id} to \textit{recipeId} in the \textbf{recipes\_w\_search\_terms} dataset for the subsequent merge with the \textbf{recipe} dataset. The effect is that every recipe from the \textbf{recipes} dataset now also contains additional information like which tags where entered by the author of the recipe when he or she created it. The joined dataset is called \textbf{foodcom\_combined\_data}.\\
+We drop nineteen columns from \textbf{foodcom\_combined\_data}. The reasons differ for the columns. Some were hard to further process like the \textit{description} column, others contained information irrelevant for prediction of the average review rating like \textit{AuthorName}. A view contained redundant information.\\ 
+We then iterated through each row of \textbf{foodcom\_combined\_data}, i.e. over each of the over 500 thousand recipes, and calculated the average rating using the \textbf{reviews} dataset. In this average calculation the reviews with a rating of zero where left out as explained in the subsection on \nameref{Reviews without rating}. The average rating without the zero reviews and some additional statistics are added to each recipe in \textbf{foodcom\_combined\_data} in new columns. \\
+The total time the recipe takes comes in a string format like \textit{2H30M} and is decoded to a single number representing the time in minutes. \textit{recipe category} is label encoded. That means that each category gets a unique number and the string is replaced with it.\\
+Two features are engineered. \textit{steps word length}, which represents a crude estimation of recipe complexity, \textit{number of ingredients}, which also contains information about complexity but also about effort needed.\\
+To make sure we only have review data that lets us conclude patterns instead of individual preference we excluded recipes with less than five reviews. Also any recipe that had a column value that was either below the 1\%-quantile or above the 99\%-quantile of all the data within the column was excluded. This step can be regarded as a cleaning procedure, as extremes might be errors in the data.\\
+One of the main limitations with our data is it's imbalance, which is further described in section \ref{imbalanced Dataset}. To perform a meaningful regression, we balanced the data by oversampling the underrepresented group (recipes with low average rating). We sampled respectively 5000 data records with an average rating below and above $3$ (middle between $1$, which is the lowest, and $5$, which is the highest). The lower rating group was sampled with repetition, the higher rating was sampled without repetition since it contained enough data records. We experimented with the number of partitions (from 2 to 20), but it seemed to have no significant effect on the MSE of the regression. Normalization of the data did not change the MSE significantly either.\\
+%\newpage
+
+\subsection{Data analysis} 
+% written by Markus on 7th of January 2023 at 18:22
+%\begin{wrapfigure}{L}{0.55\textwidth}
+%    \centering
+%    \includegraphics[width=0.5\textwidth]{pictures/nn_training.png}
+%    \caption{Training of the neural network architecture found by Hyperband\cite{hyperband:2016}. Shows steady improvement on validation data throughout 50 epochs of training.}
+%\end{wrapfigure}
+%We analyzed various aspects of the data. 
+Our main focus was to predict the average rating with a linear regression from some of the columns in the \textbf{foodcom\_combined\_data} data set. 
+As an effort to improve the MSE we fitted a regression on all combinations of input columns. The MSEs were normally distributed. In one experiment the best and worst MSE were 0.14 apart and the best and worst R2 score were 0.12 apart. To determine the features that contributed most to better regression results we recorded the MSE, R2 score and mean distance of the MSE to the MSE of a permuation test and the columns that produced these scores. In a new dataframe, containing this information for all regressions, a feature has a \textit{1} in the row if it was used for this regression. By multiplying the feature column of ones and zeros with the MSE column and suming the result we get the total contribution to the MSE of the feature. The features that have the lowest value for this contribute most to better regressions and are thus strong predictors of the average review. The features \textit{SodiumContent} and \textit{TotalTime} are always the best features, also through multiple experiments with different samples of the \textbf{foodcom\_combined\_data} dataset.\\
+We also searched for a neural network that would predict the data more accurately than the linear regression by using the Hyperband algorithm\cite{hyperband:2016} which can be configured to search through a search space of possible network architectures and find the lowest possible MSE. 
+%\newpage
+
+\section{Results}
+\begin{wrapfigure}{R}{0.55\textwidth}
+    \centering
+    \includegraphics[width=0.5\textwidth]{pictures/reg_r2s.png}
+    \caption{R2 scores of regressions on all combination of features. MSE and mean MSE distance to mean MSE of permutated predictions have similiar distributions and standard deviation but different values on the horizontal axis.}
+\end{wrapfigure}
+The minimum mean squared error (MSE) achieved through linear regression was 0.9. The maximum R2 score was 0.11. The MSE is a low quality measure for good prediction since it can be decreased by reducing the nominal differences between the inputs and the predictions, e.g. by normalisation. The R2 score shows the relatedness between the inputs and the predictions and is a better measure of quality for prediction models with our data. The table \ref{quality_Table} shows the contributions of each column to the metrics by which good regressions are measured. Lower MSE and higher R2 contribution mean better results. Columns at the bottom were excluded from better performing regressions.\\
+The time it takes to cook and prepare the meal and the amount of sodium and sugar in the food contribute most to good predictions through linear regression. This finding fits with intuition. Meals are easily too salty, not sweet enough or take too long to be cooked. This makes us confident in the method. The ranking also shows the quality of engineered features like the \textit{ingredients\_amount}. By seeing how well it contributes to good regressions in comparison to raw data, like calories, we determine that the number of ingredients matter in a rating for a meal, at least more than its cholesterol. \\
+The best neural network found has a validation loss of 0.11, an R2 score of 0.9, consists of an input layer with 464 nodes, nine fully connected layers with between eight and 28 nodes each, and has 22425 trainable parameters. The most important factor for increasing performance was adding more densely connected layers. That suggests that in order to predict the average rating well, more abstract features first need to be built from the ones in the data set.  
+\begin{table}[!h]
+\centering
+\begin{tabular}{llrrr}
+\toprule
+{} &           Columnname &  mse\_contribution &  r2s\_contribution &  perm\_contribution \\
+\midrule
+0  &            TotalTime &       3945.927655 &        258.924502 &        4479.712620 \\
+6  &        SodiumContent &       3956.950853 &        248.373703 &        4468.461176 \\
+9  &         SugarContent &       3970.751229 &        234.288793 &        4453.393382 \\
+8  &         FiberContent &       3973.983154 &        231.690727 &        4450.831727 \\
+12 &   ingredients\_amount &       3981.245242 &        224.517615 &        4443.992007 \\
+3  &           FatContent &       3986.135884 &        219.939627 &        4438.660776 \\
+7  &  CarbohydrateContent &       3988.292624 &        218.139906 &        4437.966954 \\
+2  &             Calories &       3988.559090 &        217.457810 &        4435.841019 \\
+10 &       ProteinContent &       3989.576794 &        216.074330 &        4435.490587 \\
+4  &  SaturatedFatContent &       3993.507759 &        212.428643 &        4431.946562 \\
+5  &   CholesterolContent &       3993.885797 &        212.197047 &        4430.715830 \\
+11 &    steps\_word\_length &       3994.015980 &        211.709956 &        4430.306982 \\
+1  &       RecipeCategory &       3994.017904 &        211.480202 &        4429.223702 \\
+\bottomrule
+\end{tabular}
+\caption{\label{quality_Table}Quality of different columns for prediction in descending order of quality, i.e. the best features are on top. Can either be sorted by descending MSE contribution, ascending R2 score contribution or ascending mean MSE distance to mean MSE of permutated predictions, but results then do not vary largely. This lets us conclude that the inferred quality of the features is robust.}
+\end{table}
+%\newpage
+
+%The columns used were \textit{TotalTime}, \textit{FatContent}, \textit{SodiumContent}, \textit{CarbohydrateContent}, \textit{SugarContent}, \textit{ProteinContent}, \textit{SodiumContent}, \textit{steps_word_length} and \textit{ingredients_amount} from the \textbf{foodcom\_combined\_data} dataset.
+
+\section{Discussion}
+\subsection{Limitations}
+\subsubsection{Dataset limitations}
+There are some general limitations that come with the choice of the dataset. Any analysis results and conclusions can't be generalized for the below reasons:
+\begin{itemize}[noitemsep,topsep=5pt]
+\item Food.com is an English-speaking website (and not the only one), so no conclusions could be made about users of other sites and the non-English-speaking world.
+\item  Not all people use recipe sites. In the last time and especially among young people video-recipes from Instagram, TikTok and Youtube are very popular. Moreover, offline recipe sources exist, like cooking books or handwritten family recipes.
+\item  The datasets that we used have very little data from 2020 and later. We assume that the global pandemic had some impact on cooking in general because people were forced to cook at home (due to restrictions). Analyzing this impact would be an interesting research question on its own. 
+\item  Subtle factors might influence the recipe rating, like author popularity, writing style, the clearness and completeness of instructions, popularity and availability of ingredients and ingredients' price. These and all possible other factors are not included in the dataset.
+\end{itemize}
+
+\subsubsection{Imbalanced dataset}
+\label{imbalanced Dataset}
+\begin{wrapfigure}{L}{0.55\textwidth}
+    \centering
+\begin{tabular}{|l|l|l|l|}
+\hline
+Rating & Number of reviews & proportion in \%   \\ \hline
+0 & 76248 & 5.43\\ \hline
+1 & 16559 & 1.18 \\ \hline
+2 & 17597 & 1.26 \\ \hline
+3 & 50279 & 3.59 \\ \hline
+4 & 229217 & 16.35  \\ \hline
+5 & 1012082 & 72.19 \\ \hline
+Total & 1401982 & 100 \\ \hline
+\end{tabular}
+\caption{\label{imbalanced_dataset_Table}Most reviews have a rating of 4 or 5. One possible explanation is that the future reviewer decides beforehand whether to try out the recipe (for example, if there are ingredients included that they don't like).}% The distribution of ratings would be more balanced if recipes were assigned at random.
+\end{wrapfigure}
+Food.com has a 5-star review system, where 5 is the highest rating and 1 is the lowest. Moreover, it is possible to leave a review without a rating. Such reviews have value $0$ in rating column in the data set. Out of 1401982 reviews in the \textbf{reviews} data set, the rating distribution is shown in table \ref{imbalanced_dataset_Table}.\\
+As we see from the numbers, most reviews are positive (5 or 4). Only very few reviews have low ratings (1,2,3). This makes the data that we are dealing with very imbalanced. \\
+After calculating the average rating for all recipes that have more than five reviews in total (without zero-rating reviews), the distribution of average rating looks as in \ref{rating_distr_pic}:\\
+\begin{wrapfigure}{R}{0.55\textwidth}
+    \centering
+    \includegraphics[width=0.5\textwidth]{pictures/rating_distr_log.png}
+    \caption{\label{rating_distr_pic}The average rating distribution of recipes. Note that for convenience we use a logarithmic scale.}
+\end{wrapfigure}
+To perform meaningful analysis on such imbalanced data, we resampled the dataset. We took respectively 5000 data records (recipes) with an average rating below and above $3$, which makes our dataset balanced. Due to time constraints and the nature of the project, we decided this was the most straightforward solution. \\
+Another approach would be to perform our analysis on the imbalanced dataset. However, the metrics to evaluate such an analysis would be more complex than we used. For example, MSE is highly ineffective on imbalanced data. There are multiple approaches to introducing a balanced MSE\cite{Jiawei:2022}\cite{Yang:2021}. In general, more approaches focusing on imbalanced classification than on imbalanced regression exist. Since we utilize regression in our work, we have used resampling instead of more complicated methods that aren't widespread in the ML community.
+
+
+\subsubsection{Reviews without rating}
+\label{Reviews without rating}
+As can be seen from the \ref{imbalanced_dataset_Table}, more than $5\%$ of reviews have no rating, which is more than the number of reviews with rating either $1$ or $2$ combined. This reviews include questions ($"$Question: Will just inverting the jars after they are full be sufficient to seal/store/keep the jam for several months?$"$), general remarks ($"$Please do not ever again risk your health by tasting a marinade that has raw chicken soaking in it; it is extremely dangerous.$"$), positive reviews ($"$I absolutely love this salad! It has become a staple in our house.$"$) and negative reviews ($"$This recipe was terrible - the cookies turned out gooey and impossible to eat.$"$).\\ 
+\begin{wrapfigure}{R}{0.55\textwidth}
+    \centering
+\begin{tabular}{|l|l|l|l|}
+\hline
+Sentiment & Number of reviews & proportion in \%   \\ \hline
+Positive & 60648  & 79.54 \\ \hline
+Neutral & 7865 & 10.32 \\ \hline
+Negative & 7735 & 10.14 \\ \hline
+Total & 76248 & 100 \\ \hline
+\end{tabular}
+\caption{\label{sentiment_table}Sentiment distribution.}
+\end{wrapfigure}
+Obviously, it makes no sense to treat those reviews in the analysis as having $0$ rating (e.g. even $"$worse$"$ than 1), since many of them are actually neutral or positive. One possible approach would be to use sentiment analysis to $"$rate$"$ these reviews. For this, we have used a SentimentAnalyzer tool from NLTK library \cite{bird2009natural}. The compound score is a metric that calculates the sum of all the lexicon ratings which have been normalized between -1 and +1 where -1 indicates most extreme negative and +1 indicates most extreme positive\cite{bonta2019comprehensive}. Using SentimentAnalyzer, we calculated the compound score for each of the $0$-rated reviews and divided them into three categories: positive (compound larger than $0.05$, neutral (compound between $-0.05$ and $0.05$) and negative (compound lower than $-0.05$). The results are shown in \ref{sentiment_table}.
+
+
+%The compound score is distributed as shown below:\\
+%\begin{figure}[H]
+%\centering
+%\includegraphics[scale=0.7]{pictures/compound_distr.png}\\
+%\end{figure}
+
+Most unrated reviews have been classified as positive. This was one of the reasons we decided not to include the unrated reviews in our dataset, since we already had a very imbalanced dataset with the majority being positive reviews. Other reasons are:
+\begin{itemize}[noitemsep,topsep=5pt]
+    \item It is unclear what would be the best way to give a numeric rating (1-5) to the reviews based on compound score.
+    \item We don't know how accurate the compound score is regarding the $"$supposed$"$ rating.
+    \item Many unrated reviews included words like $"$I haven't tried this yet$"$. It is clearly impossible to give a rating to such reviews.
+    \item It is unclear how the neutral reviews (questions, remarks) should be rated and whether they should be rated at all.
+\end{itemize}
+Determining the underlying numerical rating of the unrated reviews is an interesting research question on its own, which would require additional training of the sentiment analyzer with review data. However, this question lies beyond the scope of our project. 
+
+
+%Further analysis of reviews concluded that the ratings of zero included questions and both positive and negative sentiment. They were left out of the calculation for the average rating of the recipes because of this ambiguity. %TODO: Talk about sentiment analysis or maybe link to section 2.3 Data Analysis
+
+\subsection{Future work}
+\label{Future work}
+There are several potential avenues for future work in this area. One possibility is to expand the scope of the analysis to include additional factors that may influence recipe ratings, such as the cuisine type or the presence of certain dietary restrictions. Another possibility is to incorporate user reviews and ratings from other sources, such as social media or other recipe websites, to improve the accuracy of the prediction model further. Finally, treating the research question as a classification (positively/negatively perceived recipes) task instead of regression would be interesting. %Finally, it would be interesting to explore the use of more advanced machine learning techniques, such as deep learning, to analyze the data.
+
+\bibliographystyle{unsrt}
+\bibliography{references}
+
+
+\end{document}

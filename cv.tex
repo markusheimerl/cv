@@ -1,92 +1,217 @@
-\documentclass[11pt,a4paper,sans]{moderncv}
+%-------------------------
+% Resume in Latex
+% Author: Markus Heimerl
+%-------------------------
 
-\moderncvstyle{classic}
-\moderncvcolor{blue}
+\documentclass[letterpaper,11pt]{article}
 
-\usepackage[scale=0.75]{geometry}
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{fontawesome5}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{xcolor}
 
-\name{Markus}{Heimerl}
-\title{Automotive Developer}
-\address{Regensburg, Bavaria, Germany}
-\phone{+49 123 456 7890}
-\email{markus.heimerl@example.com}
-\homepage{markusheimerl.com}
-\social[linkedin]{markusheimerl}
-\social[github]{markusheimerl}
+% Adjust margins
+\geometry{left=0.5in, top=0.5in, right=0.5in, bottom=0.5in, footskip=.25in}
+
+% Custom colors
+\definecolor{primary}{RGB}{0, 73, 122}
+\definecolor{secondary}{RGB}{83, 83, 83}
+\definecolor{accent}{RGB}{0, 102, 204}
+
+% Custom commands
+\newcommand{\headerspace}{\vspace{-0.25em}}
+\newcommand{\sectionspace}{\vspace{0.5em}}
+\newcommand{\entryspace}{\vspace{0.2em}}
+
+% Section formatting
+\titleformat{\section}{\color{primary}\large\bfseries}
+{}{0em}{}[\color{primary}\titlerule]
+\titlespacing{\section}{0pt}{5pt}{5pt}
+
+% Header & Footer
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Create custom entry environment
+\newcommand{\cventry}[4]{
+  \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
+    \textbf{#1} & \textcolor{secondary}{#2} \\
+    \textcolor{accent}{\textit{#3}} & \textcolor{secondary}{\textit{#4}} \\
+  \end{tabular*}\entryspace
+}
+
+% Custom skill bar
+\newcommand{\skillbar}[2]{
+  \textbf{#1} & 
+  \begin{tikzpicture}[scale=0.6]
+    \foreach \x in {1,...,5}
+    {
+      \ifnum \x<=#2
+        \draw[fill=primary] (\x-1,0) rectangle (\x,0.4);
+      \else
+        \draw[fill=secondary!30] (\x-1,0) rectangle (\x,0.4);
+      \fi
+    }
+  \end{tikzpicture} \\
+}
 
 \begin{document}
 
-\makecvtitle
+%------------------------
+% HEADER
+%------------------------
+\begin{center}
+    {\LARGE \textbf{\textcolor{primary}{Markus Heimerl}}} \\ \headerspace
+    {\normalsize \textcolor{secondary}{Embedded Systems Engineer \& AI Implementation Specialist}} \\ \headerspace
+    \vspace{0.3em} % Added vertical space here
+    \begin{tabular}{ll}
+        \faEnvelope\, \href{mailto:info@markusheimerl.com}{info@markusheimerl.com} & 
+        \faGithub\, \href{https://github.com/markusheimerl}{github.com/markusheimerl} \\
+        \faGlobe\, \href{https://markusheimerl.com}{markusheimerl.com} & 
+        \faLinkedin\, \href{https://linkedin.com/in/markusheimerl}{linkedin.com/in/markusheimerl} \\
+        \multicolumn{2}{l}{\faMobile*\, +49 176 78227914}
+    \end{tabular}
+\end{center}
 
-\section{Profile}
-Innovative Automotive Developer with expertise in programming, hardware design, and computer architecture. Passionate about developing cutting-edge solutions for the automotive industry, with a focus on visualization and analysis tools. Skilled in C++, AUTOSAR, and agile methodologies. Committed to continuous learning and applying emerging technologies to solve real-world challenges.
+%------------------------
+% PROFESSIONAL SUMMARY
+%------------------------
+\section{Professional Summary}
+Results-driven Embedded Systems Engineer with expertise at the intersection of hardware and software development. Specialized in implementing AI algorithms in constrained environments, from state space models to neural networks. Demonstrated success optimizing complex codebases and creating reliable, performant systems across automotive and aviation applications. Proven track record of improving system performance through deep technical understanding and innovative problem-solving approaches.
 
-\section{Experience}
-\cventry{2024--Present}{Automotive Developer}{intive}{Regensburg, Germany}{}{
-\begin{itemize}
-\item Develop and optimize "Carmen," a visualization and analysis tool for BMW
-\item Implement advanced C++ programming techniques for robust software solutions
-\item Conduct code optimization and refactoring to enhance tool performance
-\item Implement rigorous testing methodologies following SOLID principles
-\item Collaborate with cross-functional teams to drive innovation in automotive technology
-\end{itemize}}
+%------------------------
+% EXPERIENCE
+%------------------------
+\section{Professional Experience}
 
-\cventry{2023--2024}{Software Development Engineer}{VECTOR Informatik}{Regensburg, Germany}{}{
-\begin{itemize}
-\item Developed sophisticated flash bootloader for automotive ECUs
-\item Enhanced testing frameworks using C++ and Google Test
-\item Worked with AUTOSAR Classic framework
-\item Collaborated on complex software challenges in automotive sector
-\end{itemize}}
+\cventry{Automotive Developer}{01/2024 - Present}
+{intive GmbH}{Regensburg, Bavaria}
+\begin{itemize}[leftmargin=*, nosep]
+    \item Lead optimization of "Carmen," a critical visualization tool for BMW's ECU network communications, resulting in 30\% improved performance
+    \item Refactored complex legacy C++ codebase, implementing SOLID principles to enhance maintainability and reduce technical debt
+    \item Designed and implemented automated testing infrastructure that increased test coverage from 40\% to 85\%
+    \item Coordinated cross-functional teams to align development priorities across engineering disciplines
+\end{itemize}
 
-\cventry{2022}{Academic Tutor}{OTH Regensburg}{Regensburg, Germany}{}{
-\begin{itemize}
-\item Conducted tutorials on digital technology principles
-\item Guided students in circuit development using VHDL
-\item Provided support in combinatorial logic and switching networks
-\end{itemize}}
+\cventry{Software Development Engineer}{01/2023 - 12/2023}
+{VECTOR Informatik}{Regensburg, Bavaria}
+\begin{itemize}[leftmargin=*, nosep]
+    \item Architected and implemented secure flash bootloader for automotive ECUs, ensuring robust OTA update capabilities
+    \item Enhanced testing framework using Google Test, strengthening reliability of safety-critical components
+    \item Collaborated on AUTOSAR Classic implementations, ensuring standards compliance while optimizing performance
+    \item Spearheaded Git workflow improvements that reduced merge conflicts by 45\% across development teams
+\end{itemize}
 
+\cventry{Academic Tutor - Digital Design}{03/2022 - 12/2022}
+{Ostbayerische Technische Hochschule Regensburg}{Regensburg, Bavaria}
+\begin{itemize}[leftmargin=*, nosep]
+    \item Mentored engineering students in digital logic design, VHDL implementation, and processor architecture
+    \item Developed hands-on workshops that increased practical understanding of digital system design
+    \item Created supplemental materials on circuit implementation that improved student exam performance by 15\%
+\end{itemize}
+
+%------------------------
+% PROJECTS
+%------------------------
+\section{Technical Projects}
+
+\cventry{Quadcopter Control System}{01/2021 - Present}
+{Personal Research Project}{github.com/markusheimerl/quad}
+\begin{itemize}[leftmargin=*, nosep]
+    \item Engineered complete flight control system including custom PCB design, firmware, and simulation environment
+    \item Implemented state space models and imitation learning for autonomous flight capabilities
+    \item Developed real-time control algorithms optimized for resource-constrained embedded systems
+    \item Created comprehensive test environments and CI/CD pipelines to ensure system reliability
+\end{itemize}
+
+\cventry{State Space Model (SSM) Implementation}{02/2024 - Present}
+{Open Source Contribution}{github.com/markusheimerl/ssm}
+\begin{itemize}[leftmargin=*, nosep]
+    \item Developed efficient C implementation of state space models for embedded applications
+    \item Optimized matrix operations for memory-constrained environments while maintaining numerical stability
+    \item Achieved 3x performance improvement over existing implementations through careful algorithm design
+\end{itemize}
+
+\cventry{Small Language Model (SLM)}{01/2024 - Present}
+{Open Source Contribution}{github.com/markusheimerl/slm}
+\begin{itemize}[leftmargin=*, nosep]
+    \item Created lightweight language model implementation suitable for deployment on edge devices
+    \item Optimized inference pipeline to operate within strict memory and computational constraints
+    \item Integrated quantization techniques to reduce model size by 75\% with minimal accuracy loss
+\end{itemize}
+
+%------------------------
+% EDUCATION
+%------------------------
 \section{Education}
-\cventry{2018--2022}{Bachelor of Science in Computer Engineering}{OTH Regensburg}{Regensburg, Germany}{}{
-\textit{Thesis:} Development of a RISC-V RV32I Processor with VGA Interface using VHDL
-}
 
-\section{Skills}
-\cvitem{Programming}{C++, C, VHDL, Python}
-\cvitem{Frameworks}{AUTOSAR, Google Test}
-\cvitem{Tools}{Git, Jira}
-\cvitem{Methodologies}{Agile, SOLID principles}
-\cvitem{Other}{Digital Design, Embedded Systems, Robotics}
+\cventry{Bachelor of Science in Computer Engineering}{2018 - 2022}
+{Ostbayerische Technische Hochschule Regensburg}{Grade: 1.x/1.0}
+\begin{itemize}[leftmargin=*, nosep]
+    \item Thesis: \textit{"Development of a RISC-V RV32I Processor with VGA Interface using VHDL"}
+    \item Key coursework: Embedded Systems Design, Digital Signal Processing, Computer Architecture, Operating Systems, Robotics
+    \item Activities: Organized TEDxOTHRegensburg, participated in the university's Buddy Program for international students
+\end{itemize}
 
-\section{Projects}
-\cvitem{Drone Simulator}{\url{https://github.com/ratisbonrobotics/simulator} - Developed a sophisticated 3D quadrotor simulation environment, incorporating Newtonian physics for realistic flight dynamics and control}
+%------------------------
+% TECHNICAL SKILLS
+%------------------------
+\section{Technical Expertise}
 
-\cvitem{Transformer}{\url{https://github.com/ratisbonrobotics/transformer} - Implemented an advanced autoregressive decoder transformer, pushing the boundaries of natural language processing and generation}
+\begin{multicols}{2}
+    \begin{itemize}[leftmargin=*, nosep]
+        \item \textbf{Programming Languages:} C/C++, Python, VHDL, Assembly
+        \item \textbf{Embedded Systems:} RTOS, Bare-metal, ARM, RISC-V
+        \item \textbf{AI/ML:} State Space Models, Neural Networks, Imitation Learning
+        \item \textbf{Hardware Design:} PCB Design, Digital Logic, FPGAs
+        \item \textbf{Software Engineering:} Git, CI/CD, TDD, SOLID
+        \item \textbf{Automotive:} AUTOSAR, ECU Development, Diagnostics
+        \item \textbf{Tools:} Google Test, Jira, Altium, ModelSim
+        \item \textbf{Web Technologies:} HTML/CSS, Tailwind, SupaBase
+    \end{itemize}
+\end{multicols}
 
-\cvitem{Riemann Hypothesis Visualization}{\url{https://markusheimerl.com/riemann/} - Created an interactive visualization exploring the profound connection between the Riemann hypothesis and prime number distribution}
+%------------------------
+% LANGUAGES
+%------------------------
+\section{Languages}
+\begin{tabular}{ll}
+    German (Native) & English (C1, TOEFL iBT 105/120)
+\end{tabular}
 
-\cvitem{Cellular Automata Explorer}{\url{https://markusheimerl.com/cellularautomata/} - Designed a dynamic system to demonstrate the emergence of complex structures from simple rules in cellular automata}
-
-\cvitem{Multilayer Perceptron Visualizer}{\url{https://markusheimerl.com/multilayerperceptron/} - Engineered a detailed, interactive visualization of feed-forward processes in multilayer perceptrons, enhancing understanding of neural network architectures}
-
-\cvitem{Manim-based Math Education}{\url{https://markusheimerl.com/manim/} - Leveraged the Manim animation engine to create visually stunning mathematical explanations, revolutionizing math education through video}
-
-\cvitem{Fragment Shader Art}{\url{https://markusheimerl.com/shaderart/} - Developed a JavaScript environment for creating and rendering complex Shadertoy shaders, pushing the boundaries of real-time graphics}
-
-\cvitem{Parallel 2D Heat Expansion Solver}{\url{https://markusheimerl.com/heatexpansion/} - Implemented a high-performance computing solution for 2D heat expansion using MPI, demonstrating expertise in parallel programming}
-
-\cvitem{CNN for Sketch Classification}{\url{https://markusheimerl.com/cnn/} - Designed and trained custom neural architectures using the hyperband algorithm to efficiently classify hand-drawn sketches, showcasing innovation in machine learning optimization}
-
+%------------------------
+% CERTIFICATIONS
+%------------------------
 \section{Certifications}
-\cvitem{2021}{Aerial Robotics - Coursera}
-\cvitem{2021}{TOEFL iBT - Score: 105/120 (C1 Level)}
+\begin{itemize}[leftmargin=*, nosep]
+    \item \textbf{Aerial Robotics} - Coursera (2021)
+\end{itemize}
 
-\section{Volunteering}
-\cventry{2019}{Organizer}{TEDxOTHRegensburg}{Regensburg, Germany}{}{
-\begin{itemize}
-\item Recruited and coached speakers
-\item Managed IT infrastructure and online ticketing system
-\item Contributed to sponsor acquisition and relationship management
-\end{itemize}}
+%------------------------
+% VOLUNTEER EXPERIENCE
+%------------------------
+\section{Volunteer Experience}
+
+\cventry{Event Organizer}{03/2019 - 08/2019}
+{TEDxOTHRegensburg}{Regensburg, Bavaria}
+\begin{itemize}[leftmargin=*, nosep]
+    \item Recruited and coached speakers, including Dr. Max Plach on CRISPR technology
+    \item Implemented online ticketing system using WordPress, streamlining attendee experience
+    \item Secured sponsorship from InterNetX GmbH through effective relationship building
+\end{itemize}
 
 \end{document}

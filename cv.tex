@@ -1,5 +1,5 @@
 %-------------------------
-% Modern Two-Column Resume
+% Neuralink-Optimized Resume
 % Author: Markus Heimerl
 %-------------------------
 
@@ -61,6 +61,13 @@
     \vspace{8pt}
 }
 
+% New command for project entries with better formatting
+\newcommand{\cvproject}[3]{
+    \vspace{3pt}
+    \textbf{\color{darkgray}#1} \hfill \textcolor{lightgray}{\small #2} \\
+    \textcolor{primaryblue}{\textit{\small #3}} \\[3pt]
+}
+
 \begin{document}
 
 % Two column layout
@@ -76,7 +83,7 @@
 \begin{center}
     {\LARGE\bfseries\color{darkgray} Markus} \\[4pt]
     {\LARGE\bfseries\color{primaryblue} Heimerl} \\[8pt]
-    {\small\color{darkgray} Systems Engineer}
+    {\small\color{darkgray} Embedded Systems Engineer}
 \end{center}
 
 \vspace{0.6cm}
@@ -88,12 +95,12 @@
 \faGithub\, \href{https://github.com/markusheimerl}{markusheimerl}
 
 \cvsection{Technical Skills}
-\cvitem{Programming}{C/C++, Python (Pytorch/JAX),\\ VHDL/Verilog}
-\cvitem{Embedded}{ARM, RISC-V}
-\cvitem{AI/ML}{State Space Models, Transformers, \\ Stochastic Methods}
-\cvitem{Hardware}{PCB Design, Digital Logic, FPGAs}
-\cvitem{Automotive}{AUTOSAR Classic, ECU Development}
-\cvitem{Tools}{Git, GitHub Platform, KiCad,\\ GNU Tools}
+\cvitem{Programming}{C/C++ (bare-metal), Python,\\ VHDL/Verilog, Assembly}
+\cvitem{MCU/Processors}{ARM Cortex-M, RISC-V,\\ STM32, ESP32}
+\cvitem{Signal Processing}{State Space Models, Kalman Filters,\\ Real-time DSP}
+\cvitem{Hardware}{PCB Design, Oscilloscope,\\ Logic Analyzer, JTAG/SWD}
+\cvitem{Safety-Critical}{AUTOSAR, MISRA C,\\ Fault-tolerant Design}
+\cvitem{Protocols}{SPI, I2C, UART, CAN, BLE}
 
 \cvsection{Languages}
 \cvitem{German}{Native Speaker}
@@ -111,59 +118,53 @@
 \vspace{0.5cm}
 
 \cvsection{Professional Summary}
-Results-driven Embedded Systems Engineer with exceptional expertise at the intersection of hardware and software development. Specialized in implementing cutting-edge AI algorithms in constrained environments and optimizing complex systems for automotive and aviation applications. Proven excellence in technical leadership and delivering innovative solutions.
+Embedded Systems Engineer with demonstrated expertise in developing safety-critical, power-constrained systems. Strong background in signal processing algorithms, bare-metal firmware development, and hardware-software co-design. Passionate about pushing the boundaries of embedded systems and eager to contribute to revolutionary brain-computer interface technology.
 
 \cvsection{Professional Experience}
 
-\cventry{Automotive Developer}{May 2024 - Present}{intive GmbH, Regensburg}{
+\cventry{Automotive Embedded Developer}{May 2024 - Present}{intive GmbH, Regensburg}{
     \begin{itemize}[leftmargin=10pt, itemsep=2pt, parsep=0pt, topsep=3pt]
-        \item Development of BMW's critical ECU network processing and visualization tool
-        \item Spearheaded refactoring effort of complex legacy codebase using agents
-        \item Coordinated cross-functional teams
+        \item Developing safety-critical ECU network diagnostic and visualization tool for BMW
+        \item Leading refactoring effort to improve performance and maintainability
+        \item Coordinating cross-functional collaboration between hardware and software teams
     \end{itemize}
 }
 
-\cventry{Software Development Engineer}{Jul 2023 - Dec 2023}{VECTOR Informatik, Regensburg}{
+\cventry{Embedded Software Engineer}{Jul 2023 - Dec 2023}{VECTOR Informatik, Regensburg}{
     \begin{itemize}[leftmargin=10pt, itemsep=2pt, parsep=0pt, topsep=3pt]
-        \item Participated in project focused on flash bootloader development with OTA capabilities
-        \item Contributed to development process optimization initiatives within agile framework
-        \item Collaborated with senior engineers on automotive software development best practices
+        \item Contributed to bootloader development with OTA capabilities for automotive MCUs
+        \item Implemented fault-tolerant firmware update mechanisms with rollback protection
     \end{itemize}
 }
 
-\cventry{Academic Tutor - Digital Design}{Mar 2022 - Dec 2022}{OTH Regensburg}{
+\cventry{Digital Design Teaching Assistant}{Mar 2022 - Dec 2022}{OTH Regensburg}{
     \begin{itemize}[leftmargin=10pt, itemsep=2pt, parsep=0pt, topsep=3pt]
-        \item Supervised weekly practice sessions for digital logic design and VHDL coursework
-        \item Applied evaluation system that improved student preparation for examinations
+        \item Taught FPGA development and digital signal processing fundamentals
+        \item Created practical labs for real-time system design and hardware debugging
     \end{itemize}
 }
 
-\cvsection{Key Technical Projects}
+\cvsection{Exceptional Technical Projects}
 
-\cventry{Quadcopter Control System}{2021 - Present}{\href{https://github.com/markusheimerl/quad}{github.com/markusheimerl/quad}}{
-    Complete flight control system with custom PCB design, state space models, and imitation learning for autonomous flight. Real-time algorithms optimized for embedded systems.
-}
+\cvproject{Real-Time Flight Control System}{2021 - Present}{\href{https://github.com/markusheimerl/quad}{github.com/markusheimerl/quad}}
+{\small Designed complete autonomous quadcopter featuring custom PCB, bare-metal firmware, and experimental state space model implementation for state estimation. System integrates IMU sensor fusion, motor control and vision.}
 
-\cventry{State Space Model Implementation}{2024 - Present}{\href{https://github.com/markusheimerl/ssm}{github.com/markusheimerl/ssm}}{
-    Highly efficient C/CUDA implementation for embedded applications with outstanding performance improvements and numerical stability - Proven to replace Kalman Filter - PID controller combination in simulation for quadcoptor
-}
+\vspace{8pt}
 
-\cventry{Small Language Model}{2024 - Present}{\href{https://github.com/markusheimerl/slm}{github.com/markusheimerl/slm}}{
-    Lightweight language model for neural architecture research
-}
+\cvproject{High-Performance State Space Models}{2024}{\href{https://github.com/markusheimerl/ssm}{github.com/markusheimerl/ssm}}
+{\small Implemented optimized C/CUDA state space models for embedded deployment, achieving significant performance improvements while maintaining numerical stability.}
+
+\vspace{8pt}
+
+\cvproject{RISC-V Processor Implementation}{2022}{Bachelor's Thesis}
+{\small Designed complete RV32I processor in VHDL with custom peripherals, VGA controller, and DMA. Implemented hardware debugging interface and achieved stable 100MHz operation on Xilinx Artix-7 FPGA with comprehensive testbench verification.}
 
 \cvsection{Education}
 
-\cventry{B.Sc. Computer Engineering}{2018 - 2022}{OTH Regensburg - 1.x / 1.0}{
-    \textbf{Thesis:} Development of a RISC-V RV32I Processor with VGA Interface using VHDL
+\cventry{B.Sc. Computer Engineering}{2018 - 2022}{OTH Regensburg - Top 20\% of class}{
+    \textbf{Focus:} Embedded Systems, Digital Signal Processing, Computer Architecture\\
+    \textbf{Relevant Coursework:} Real-Time Systems, VLSI Design, Control Theory
 }
-
-\cvsection{Leadership Experience}
-
-\textbf{Event Organizer - TEDxOTHRegensburg} \hfill \textcolor{lightgray}{\small 2019} \\
-\textcolor{primaryblue}{\textit{\small TEDxOTHRegensburg}} \\
-\vspace{3pt}
-{\small Recruited speaker, secured sponsorship, implemented ticket systems}
 
 \vspace{0.5cm}
 

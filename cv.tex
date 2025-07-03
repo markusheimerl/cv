@@ -52,12 +52,23 @@
     \textcolor{lightgray}{\small #2} \\[5pt]
 }
 
-\newcommand{\cventry}[4]{
+\newcommand{\cventry}[5][text]{
     \vspace{3pt}
-    \textbf{\color{darkgray}#1} \hfill \textcolor{lightgray}{\small #2} \\
-    \textcolor{primaryblue}{\textit{\small #3}} \\
-    \vspace{3pt}
-    {\small #4}
+    \textbf{\color{darkgray}#2} \hfill \textcolor{lightgray}{\small #3} \\
+    \textcolor{primaryblue}{\textit{\small #4}}
+    \if\relax\detokenize{#5}\relax
+        % If #5 is empty, do nothing
+    \else
+        \def\entrytype{#1}%
+        \def\listtype{list}%
+        \ifx\entrytype\listtype
+            \vspace{3pt}
+        \else
+            \\
+            \vspace{3pt}
+        \fi
+        {\small #5}
+    \fi
     \vspace{8pt}
 }
 
@@ -121,14 +132,14 @@ Embedded Systems Engineer with strong background in signal processing, bare-meta
 
 \cvsection{Professional Experience}
 
-\cventry{Automotive Developer}{May 2024 - Present}{intive GmbH, Regensburg}{
+\cventry[list]{Automotive Developer}{May 2024 - Present}{intive GmbH, Regensburg}{
     \begin{itemize}[leftmargin=10pt, itemsep=2pt, parsep=0pt, topsep=3pt]
         \item Developing safety-critical ECU network diagnostic and visualization tool for BMW
         \item Leading refactoring effort to improve performance and maintainability
     \end{itemize}
 }
 
-\cventry{Software Development Engineer}{Jul 2023 - Dec 2023}{VECTOR Informatik, Regensburg}{
+\cventry{Software Development Engineer}{Jul 2023 - Dec 2023}{Vector Informatik GmbH, Regensburg}{
     Contributed to bootloader development with OTA capabilities for automotive MCUs
 }
 
@@ -144,7 +155,7 @@ Embedded Systems Engineer with strong background in signal processing, bare-meta
 \vspace{8pt}
 
 \cvproject{High-Performance State Space Models}{2024}{\href{https://github.com/markusheimerl/ssm}{github.com/markusheimerl/ssm}}
-{\small Implemented optimized C/CUDA state space models for embedded deployment, achieving significant performance improvements while maintaining numerical stability.}
+{\small Implemented optimized C/CUDA state space models for embedded deployment.}
 
 \vspace{8pt}
 
@@ -154,12 +165,12 @@ Embedded Systems Engineer with strong background in signal processing, bare-meta
 \cvsection{Education}
 
 \cventry{B.Sc. Computer Engineering}{2018 - 2022}{OTH Regensburg}{
-    \textbf{Focus:} Embedded Systems, Signal Processing, Real-Time Control, Computer Architecture\\
+    \textbf{Focus:} Embedded Systems, Signal Processing, Real-Time Control, Computer Architecture
 }
 
 \cvsection{Volunteering}
 
-\cventry{Event Organizer}{Mar 2019 - Aug 2019}{TEDxOTHRegensburg}{
+\cventry[list]{Event Organizer}{Mar 2019 - Aug 2019}{TEDxOTHRegensburg}{
     \begin{itemize}[leftmargin=10pt, itemsep=2pt, parsep=0pt, topsep=3pt]
         \item Recruited and coached speaker
         \item Implemented online ticketing system for seamless attendee experience

@@ -49,7 +49,12 @@
 
 \newcommand{\cvitem}[2]{
     \textbf{\color{darkgray}#1} \\
-    \textcolor{lightgray}{\small #2} \\[5pt]
+    \textcolor{lightgray}{\small #2} \\[2pt]
+}
+
+\newcommand{\cvitemlast}[2]{
+    \textbf{\color{darkgray}#1} \\
+    \textcolor{lightgray}{\small #2}
 }
 
 \newcommand{\cventry}[5][text]{
@@ -107,11 +112,11 @@
 \cvitem{Signal Processing}{State Space Models, Kalman Filters}
 \cvitem{Hardware}{PCB Design, FPGA Development}
 \cvitem{Safety-Critical}{AUTOSAR, MISRA C}
-\cvitem{Protocols}{SPI, I2C, UART, CAN}
+\cvitemlast{Protocols}{SPI, I2C, UART, CAN}
 
 \cvsection{Languages}
 \cvitem{German}{Native Speaker}
-\cvitem{English}{C1 Level (TOEFL iBT 105/120)}
+\cvitemlast{English}{C1 Level (TOEFL iBT 105/120)}
 
 \cvsection{Certifications}
 \textbf{Aerial Robotics} \\

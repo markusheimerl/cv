@@ -1,0 +1,253 @@
+\documentclass[9pt,a4paper]{extarticle}
+\usepackage[utf8]{inputenc}
+\usepackage[german]{babel}
+\usepackage[margin=0.6in]{geometry}
+\usepackage{multicol}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{booktabs}
+
+% Compact spacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2pt}
+\setlist{nosep,leftmargin=12pt}
+
+% Colors
+\definecolor{sectioncolor}{RGB}{0,51,102}
+\definecolor{subsectioncolor}{RGB}{0,76,153}
+
+% Section formatting
+\titleformat{\section}{\color{sectioncolor}\large\bfseries}{\thesection}{0.5em}{}
+\titleformat{\subsection}{\color{subsectioncolor}\normalsize\bfseries}{\thesubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{6pt}{3pt}
+\titlespacing*{\subsection}{0pt}{4pt}{2pt}
+
+% Header
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\textbf{Betriebssysteme Cheat Sheet - Kurs 01670 FernUni Hagen}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% Fix for better table formatting
+\renewcommand{\arraystretch}{1.1}
+
+\begin{document}
+
+\begin{center}
+{\huge\textbf{Betriebssysteme - Das ultimative Cheat Sheet}}\\
+\vspace{2mm}
+{\large Basierend auf Kurs 01670 - FernUniversität in Hagen}
+\end{center}
+
+\vspace{3mm}
+\hrule
+\vspace{3mm}
+
+\begin{multicols*}{2}
+\small
+
+\section{KE 1: Einführung \& Grundlagen}
+
+\subsection{Was ist ein Betriebssystem (BS)?}
+\textbf{Abstrakte Maschine:} Verbirgt Komplexität der Hardware, bietet einfache Schnittstelle (virtuelle Maschine).
+
+\textbf{Ressourcen-Manager:} Verwaltet \& verteilt Ressourcen (CPU, Speicher, Geräte) fair und effizient.
+
+\subsection{Klassische Aufgaben eines BS}
+\begin{itemize}
+\item \textbf{Prozessverwaltung:} Erstellen, Beenden, Steuern von Prozessen
+\item \textbf{Speicherverwaltung:} Zuweisung und Verwaltung des Hauptspeichers
+\item \textbf{Geräteverwaltung:} Ansteuerung von Hardware über Treiber
+\item \textbf{Dateisystem-Management:} Organisation in Dateien \& Verzeichnissen
+\item \textbf{Schutz \& Sicherheit:} Prozesse voneinander isolieren
+\item \textbf{Benutzerschnittstelle:} Shell (CLI) oder GUI
+\end{itemize}
+
+\subsection{Architektur \& Kernkonzepte}
+\begin{itemize}
+\item \textbf{Schichtenmodell:} Hardware → Kernel → Systemprogramme → Anwendungen
+\item \textbf{System- vs. Benutzermodus (Dual Mode):}
+  \begin{itemize}
+  \item \textit{User Mode:} Eingeschränkte Rechte für Anwendungen
+  \item \textit{Kernel Mode:} Volle Rechte für den BS-Kern. Kritische Befehle (z.B. I/O) nur hier möglich
+  \end{itemize}
+\item \textbf{Systemaufruf (Trap):} Der einzige, kontrollierte Weg vom User- in den Kernel-Modus
+\item \textbf{Interrupts:} Signal von Hardware (Geräte, Timer) an die CPU, das die Kontrolle an den Kernel übergibt
+\end{itemize}
+
+\subsection{Prozesszustände (5-Zustands-Modell)}
+\begin{enumerate}
+\item \textbf{erzeugt (new):} Prozess wird erstellt
+\item \textbf{bereit (ready):} Wartet auf CPU
+\item \textbf{rechnend (running):} Wird von CPU ausgeführt
+\item \textbf{blockiert (waiting):} Wartet auf Ereignis (z.B. I/O)
+\item \textbf{beendet (terminated):} Abgeschlossen
+\end{enumerate}
+
+\subsection{Prozesskontrollblock (PCB)}
+Die "Visitenkarte" des Prozesses für das BS. Enthält: PID, Zustand, Programmzähler, Register, Speicherinfos, offene Dateien etc.
+
+\section{KE 2: Prozesse \& Scheduling}
+
+\subsection{Programm vs. Prozess}
+\begin{itemize}
+\item \textbf{Programm:} Passive Datei mit Anweisungen
+\item \textbf{Prozess:} Programm in Ausführung. Aktive Entität mit Zustand (Code, Daten, Programmzähler, Register, Stack)
+\end{itemize}
+
+\subsection{Threads (Leichtgewichtige Prozesse)}
+\begin{itemize}
+\item Ein Prozess kann mehrere Threads haben
+\item \textbf{Teilen sich:} Code, Daten, geöffnete Dateien
+\item \textbf{Haben EIGENEN:} Programmzähler, Register, Stack
+\item \textbf{Vorteil:} Schnelleres Erstellen/Umschalten, einfache Kommunikation
+\end{itemize}
+
+\subsection{Scheduling (CPU-Zuteilung)}
+Der \textbf{Scheduler} wählt den nächsten Prozess aus der 'bereit'-Liste.
+
+\begin{center}
+\begin{tabular}{|p{2.8cm}|p{2.5cm}|p{2.5cm}|}
+\hline
+\textbf{Algorithmus} & \textbf{Vorteil} & \textbf{Nachteil} \\
+\hline
+\textbf{FCFS} (nicht-präemptiv) & Einfach, fair & Kurze Prozesse warten lange \\
+\hline
+\textbf{SJF} (nicht-präemptiv) & Optimal bzgl. avg. Wartezeit & Lange Prozesse können verhungern \\
+\hline
+\textbf{Priority} (präemptiv/nicht-p.) & Wichtige Prozesse bevorzugt & Niedrige Prioritäten können verhungern \\
+\hline
+\textbf{Round Robin} (präemptiv) & Sehr fair, gut für interaktive Systeme & Overhead durch Kontextwechsel \\
+\hline
+\end{tabular}
+\end{center}
+
+\section{KE 3: Hauptspeicherverwaltung}
+
+\subsection{Grundproblem \& MMU}
+Logische Adressen eines Prozesses auf physische Adressen im RAM abbilden. Erledigt von der \textbf{Memory Management Unit (MMU)}.
+
+\subsection{Techniken}
+\textbf{Zusammenhängende Zuweisung:}
+\begin{itemize}
+\item MFT (Feste Partitionen): → \textbf{interne} Fragmentierung
+\item MVT (Variable Partitionen): → \textbf{externe} Fragmentierung
+\end{itemize}
+
+\textbf{Paging (Seitenorientiert):}
+\begin{itemize}
+\item Physischer Speicher → \textbf{Seitenrahmen (Frames)}
+\item Logischer Speicher → \textbf{Seiten (Pages)}
+\item \textbf{Seitentabelle} pro Prozess bildet Pages auf Frames ab
+\item Löst externe Fragmentierung
+\end{itemize}
+
+\textbf{Virtueller Speicher:}
+\begin{itemize}
+\item \textbf{Konzept:} Log. Adressraum > phys. Speicher. Teile des Prozesses liegen auf Festplatte (Swap-Bereich)
+\item \textbf{Mechanismus: Demand Paging.} Seite wird erst bei Bedarf geladen
+\item \textbf{Seitenfehler (Page Fault):} Zugriff auf eine nicht geladene Seite
+\item \textbf{Seitenauslagerung:} Wenn kein Rahmen frei ist, wird eine Seite ersetzt (z.B. via \textbf{LRU}-Algorithmus)
+\item \textbf{Thrashing:} System ist nur noch am Seiten-Swappen, weil Prozesse zu wenige Frames haben
+\end{itemize}
+
+\section{KE 4: Synchronisation \& Deadlocks}
+
+\subsection{Problem: Race Conditions}
+In \textbf{kritischen Abschnitten}, wo mehrere Prozesse auf gemeinsame Ressourcen zugreifen. Benötigt \textbf{wechselseitigen Ausschluss}.
+
+\subsection{Mechanismen}
+\textbf{Semaphore (Dijkstra):} Zählervariable mit atomaren Operationen:
+\begin{itemize}
+\item \texttt{down()} (P, wait): Blockiert, wenn Zähler $\leq$ 0
+\item \texttt{up()} (V, signal): Weckt ggf. wartenden Prozess
+\end{itemize}
+
+\textbf{Monitore:} Hochsprachenkonstrukt, das Daten und Prozeduren kapselt und Mutex automatisch sicherstellt.
+
+\subsection{Deadlocks}
+\textbf{Definition:} Zyklisches Warten von Prozessen auf Ressourcen.
+
+\textbf{4 notwendige Bedingungen:}
+\begin{enumerate}
+\item Wechselseitiger Ausschluss
+\item Hold and Wait
+\item Keine Unterbrechung
+\item Zyklisches Warten
+\end{enumerate}
+
+\textbf{Umgang:} Verhinderung, Vermeidung, Erkennung \& Behebung, oder Ignorieren ("Vogel-Strauß-Algorithmus").
+
+\section{KE 5: Geräte- \& Dateiverwaltung}
+
+\subsection{Geräteverwaltung}
+\begin{itemize}
+\item \textbf{Controller:} Hardware, die Geräte steuert
+\item \textbf{Gerätetreiber:} Software, die mit dem Controller kommuniziert
+\item \textbf{DMA (Direct Memory Access):} Ermöglicht Datentransfer zwischen Gerät und Speicher ohne CPU-Beteiligung
+\end{itemize}
+
+\subsection{Dateisystem}
+\begin{itemize}
+\item \textbf{Datei:} Abstraktion für permanenten Speicher
+\item \textbf{Verzeichnis:} Hierarchische Struktur zur Organisation
+\item \textbf{Dateizuordnung} (Wie werden Blöcke gespeichert?):
+  \begin{itemize}
+  \item \textbf{FAT (File Allocation Table):} Verkettete Liste der Blöcke in zentraler Tabelle
+  \item \textbf{i-node (Index-Node):} Datenstruktur pro Datei mit Metadaten und Zeigern (direkt/indirekt) auf Datenblöcke (Standard in UNIX)
+  \end{itemize}
+\end{itemize}
+
+\section{KE 6: Sicherheit}
+
+\subsection{Ziele \& Begriffe}
+\begin{itemize}
+\item \textbf{Ziele:} Vertraulichkeit, Integrität, Verfügbarkeit
+\item \textbf{Subjekt:} Aktive Entität (Prozess, Benutzer)
+\item \textbf{Objekt:} Passive Entität (Datei, Gerät)
+\end{itemize}
+
+\subsection{Kernmechanismen}
+\textbf{Authentisierung:} Wer bist du? (Passwort)
+
+\textbf{Autorisierung (Zugriffskontrolle):} Was darfst du?
+\begin{itemize}
+\item \textbf{ACL (Access Control List):} Pro Objekt eine Liste mit Rechten für Subjekte
+\item \textbf{Capability:} Pro Subjekt eine Liste mit Tickets für Objekte
+\end{itemize}
+
+\textbf{DAC (Discretionary):} Besitzer legt Rechte fest
+
+\textbf{MAC (Mandatory):} System erzwingt globale Regeln
+\begin{itemize}
+\item \textbf{Bell-LaPadula (Vertraulichkeit):} "No Read Up, No Write Down"
+\item \textbf{Biba (Integrität):} "No Read Down, No Write Up"
+\end{itemize}
+
+\section{KE 7: Kommandosprachen}
+
+\subsection{Kommandointerpreter (Shell)}
+\begin{itemize}
+\item Schnittstelle zwischen Benutzer und BS
+\item Startet Prozesse (typisch: \texttt{fork()} \& \texttt{exec()})
+\item Verwaltet die Prozessumgebung (Variablen, offene Dateien)
+\item \textbf{I/O-Umlenkung:}
+  \begin{itemize}
+  \item \texttt{>} leitet Ausgabe in Datei um
+  \item \texttt{<} liest Eingabe aus Datei
+  \item \texttt{|} (Pipe) leitet Ausgabe eines Prozesses als Eingabe an den nächsten weiter
+  \end{itemize}
+\item \textbf{Shell-Skripte:} Automatisierung von Kommandoabfolgen mit Variablen und Kontrollstrukturen
+\end{itemize}
+
+\end{multicols*}
+
+\end{document}

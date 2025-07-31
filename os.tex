@@ -522,32 +522,395 @@
 \item Wichtige Datenstrukturen → bevorzugt im Speicher halten
 \end{itemize}
 
-\section{KE 4: Synchronisation \& Deadlocks}
+\section{KE 4: Prozesskommunikation}
 
-\subsection{Problem: Race Conditions}
-In \textbf{kritischen Abschnitten}, wo mehrere Prozesse auf gemeinsame Ressourcen zugreifen. Benötigt \textbf{wechselseitigen Ausschluss}.
-
-\subsection{Mechanismen}
-\textbf{Semaphore (Dijkstra):} Zählervariable mit atomaren Operationen:
+\subsection{Grundlagen der Prozesskommunikation}
+\textbf{Warum Kommunikation?}
 \begin{itemize}
-\item \texttt{down()} (P, wait): Blockiert, wenn Zähler $\leq$ 0
-\item \texttt{up()} (V, signal): Weckt ggf. wartenden Prozess
+\item \textbf{Gemeinsame Betriebsmittel:} Hardware/Software gleichzeitig nutzen
+\item \textbf{Kosteneffizienz:} Shared Libraries, gemeinsame Datenbasen
+\item \textbf{Wiedereintrittsinvariante Programme:} Ein Programm für mehrere Prozesse
 \end{itemize}
 
-\textbf{Monitore:} Hochsprachenkonstrukt, das Daten und Prozeduren kapselt und Mutex automatisch sicherstellt.
+\textbf{Prozessarten:}
+\begin{itemize}
+\item \textbf{Disjunkte Prozesse:} Keine gemeinsamen veränderbaren Daten
+\item \textbf{Überlappende Prozesse:} Gemeinsame veränderbare Daten → Race Conditions
+\end{itemize}
 
-\subsection{Deadlocks}
-\textbf{Definition:} Zyklisches Warten von Prozessen auf Ressourcen.
+\textbf{Race Conditions:} Ergebnis hängt von zeitlicher Reihenfolge der Operationen ab
 
-\textbf{4 notwendige Bedingungen:}
+\subsection{Kritische Abschnitte}
+\textbf{Definition:}
+\begin{itemize}
+\item \textbf{Kritischer Abschnitt:} Programmteil mit Zugriff auf gemeinsame Daten
+\item \textbf{Unkritischer Abschnitt:} Kein Zugriff auf gemeinsame Daten
+\end{itemize}
+
+\textbf{Wechselseitiger Ausschluss (Mutual Exclusion):}
+\begin{itemize}
+\item Nur ein Prozess darf gleichzeitig im kritischen Abschnitt sein
+\item Abstrakte Form: \texttt{enter\_critical\_section} → kritischer Abschnitt → \texttt{leave\_critical\_section}
+\end{itemize}
+
+\subsection{Anforderungen an wechselseitigen Ausschluss}
+\textbf{5 Grundanforderungen:}
 \begin{enumerate}
-\item Wechselseitiger Ausschluss
-\item Hold and Wait
-\item Keine Unterbrechung
-\item Zyklisches Warten
+\item \textbf{Mutual Exclusion:} Höchstens ein Prozess im kritischen Abschnitt
+\item \textbf{Deadlock Freedom:} Entscheidung in endlicher Zeit
+\item \textbf{Fairness:} Kein Prozess verhungert (Starvation-frei)
+\item \textbf{Unabhängigkeit:} Gestoppter Prozess außerhalb kritischem Abschnitt blockiert andere nicht
+\item \textbf{Geschwindigkeitsunabhängigkeit:} Keine Annahmen über relative Prozessgeschwindigkeiten
 \end{enumerate}
 
-\textbf{Umgang:} Verhinderung, Vermeidung, Erkennung \& Behebung, oder Ignorieren ("Vogel-Strauß-Algorithmus").
+\subsection{Synchronisationsvariablen}
+\textbf{Einfache Ansätze (unzureichend):}
+
+\textbf{Alternating Turn:}
+\begin{verbatim}
+s := 1;
+Prozess 1: if s=1 do {...; s:=2}
+Prozess 2: if s=2 do {...; s:=1}
+\end{verbatim}
+\textbf{Problem:} Strikte Alternierung, Selbstbehinderung
+
+\textbf{Flag-Variablen:}
+\begin{verbatim}
+flag[0] := false; flag[1] := false;
+Prozess i: flag[i] := true;
+          while flag[1-i] do {};
+          {...kritisch...}; flag[i] := false;
+\end{verbatim}
+\textbf{Problem:} Deadlock möglich
+
+\textbf{Peterson-Algorithmus (korrekt):}
+\begin{verbatim}
+flag[0]:=false; flag[1]:=false; turn:=0;
+Prozess i: flag[i] := true; turn := i;
+          while (flag[1-i] and turn=i) do {};
+          {...kritisch...}; flag[i] := false;
+\end{verbatim}
+
+\subsection{Hardware-Unterstützung}
+\textbf{Test-and-Set-Lock (TSL):}
+\begin{itemize}
+\item \textbf{Atomare Operation:} Liest Wert und setzt ihn auf 1
+\item \textbf{Bus wird gesperrt} während TSL-Ausführung
+\item \textbf{Funktionsweise:} LOCK=0 (frei), LOCK=1 (belegt)
+\end{itemize}
+
+\begin{verbatim}
+enter_critical_section:
+    TSL RX, LOCK    ; Kopiere LOCK nach RX, setze LOCK=1
+    CMP RX, #0      ; War LOCK vorher 0?
+    JNE enter_critical_section ; Nein → wiederholen
+    RET             ; Ja → weiter
+
+leave_critical_section:
+    MOVE LOCK, #0   ; LOCK freigeben
+    RET
+\end{verbatim}
+
+\textbf{Problem:} Aktives Warten (Busy Waiting) verschwendet CPU-Zeit
+
+\subsection{Semaphore}
+\textbf{Konzept (Dijkstra 1968):}
+\begin{itemize}
+\item \textbf{Semaphor:} Ganzzahlige Variable mit speziellen Operationen
+\item \textbf{Initialisierung:} s := k (k gleichzeitige Zugriffe erlaubt)
+\end{itemize}
+
+\textbf{Atomare Operationen:}
+\begin{itemize}
+\item \textbf{down(s) / P(s) / wait(s):} 
+  \begin{itemize}
+  \item s := s - 1
+  \item if s < 0 then blockiere Prozess
+  \end{itemize}
+\item \textbf{up(s) / V(s) / signal(s):}
+  \begin{itemize}
+  \item s := s + 1
+  \item if s $\leq$ 0 then wecke einen wartenden Prozess
+  \end{itemize}
+\end{itemize}
+
+\textbf{Implementierung:}
+\begin{verbatim}
+down(s):
+    s := s - 1;
+    if s < 0 then begin
+        füge Prozess in Warteschlange ein;
+        blockiere Prozess;
+    end;
+
+up(s):
+    s := s + 1;
+    if s <= 0 then begin  (* Warteschlange nicht leer *)
+        wähle Prozess aus Warteschlange;
+        versetze in "bereit"-Zustand;
+    end;
+\end{verbatim}
+
+\textbf{Semaphor-Typen:}
+\begin{itemize}
+\item \textbf{Binäre Semaphore:} s $\in$ {0,1}, für Mutual Exclusion
+\item \textbf{Allgemeine Semaphore:} s $\geq$ 0, für Ressourcenzählung
+\end{itemize}
+
+\textbf{Interpretation des Semaphor-Werts:}
+\begin{itemize}
+\item s $\geq$ 0: Anzahl verfügbarer Ressourcen
+\item s $<$ 0: |s| = Anzahl wartender Prozesse
+\end{itemize}
+
+\subsection{Klassische Synchronisationsprobleme}
+
+\subsubsection{Erzeuger-Verbraucher-Problem}
+\textbf{Szenario:} Erzeuger produziert Daten, Verbraucher konsumiert sie über Puffer
+
+\textbf{Unbegrenzter Puffer:}
+\begin{verbatim}
+var inhalt : semaphor;
+inhalt := 0;
+
+Erzeuger:                    Verbraucher:
+repeat                       repeat
+  Erzeuge Ware;               down(inhalt);
+  Bringe in Puffer;           Hole aus Puffer;
+  up(inhalt);                 Verbrauche Ware;
+until false;                until false;
+\end{verbatim}
+
+\textbf{Begrenzter Puffer (Kapazität n):}
+\begin{verbatim}
+var voll, leer, mutex : semaphor;
+voll := 0; leer := n; mutex := 1;
+
+Erzeuger:                    Verbraucher:
+repeat                       repeat
+  Erzeuge Ware;               down(voll);
+  down(leer);                 down(mutex);
+  down(mutex);                Hole aus Puffer;
+  Bringe in Puffer;           up(mutex);
+  up(mutex);                  up(leer);
+  up(voll);                   Verbrauche Ware;
+until false;                until false;
+\end{verbatim}
+
+\subsubsection{Philosophen-Problem}
+\textbf{Szenario:} n Philosophen an rundem Tisch, n Gabeln, jeder braucht 2 Gabeln zum Essen
+
+\textbf{Naive Lösung (deadlock-anfällig):}
+\begin{verbatim}
+var gabel : array[0..n-1] of semaphor;
+for i := 0 to n-1 do gabel[i] := 1;
+
+Philosoph i:
+repeat
+  denken;
+  down(gabel[i]);        (* linke Gabel *)
+  down(gabel[(i+1) mod n]); (* rechte Gabel *)
+  essen;
+  up(gabel[(i+1) mod n]);
+  up(gabel[i]);
+until false;
+\end{verbatim}
+
+\textbf{Korrekte Lösung:}
+\begin{verbatim}
+var ausschluss : semaphor; privat : array[0..n-1] of semaphor;
+var c : array[0..n-1] of (denken, hungrig, essen);
+
+procedure teste(i):
+  if (c[i] = hungrig and 
+      c[links(i)] <> essen and 
+      c[rechts(i)] <> essen) then
+  begin
+    c[i] := essen;
+    up(privat[i]);
+  end;
+
+procedure gabel_nehmen(i):
+  down(ausschluss);
+  c[i] := hungrig;
+  teste(i);
+  up(ausschluss);
+  down(privat[i]);  (* warte falls nötig *)
+
+procedure gabel_weglegen(i):
+  down(ausschluss);
+  c[i] := denken;
+  teste(links(i));  (* Nachbarn prüfen *)
+  teste(rechts(i));
+  up(ausschluss);
+\end{verbatim}
+
+\subsubsection{Leser-Schreiber-Problem}
+\textbf{Szenario:} Mehrere Leser gleichzeitig OK, aber nur ein Schreiber exklusiv
+
+\textbf{Priorität für Leser:}
+\begin{verbatim}
+var readcount : integer; db, readsem : semaphor;
+readcount := 0; db := 1; readsem := 1;
+
+Leser:                       Schreiber:
+repeat                       repeat
+  down(readsem);              down(db);
+  readcount := readcount+1;    Schreibe Daten;
+  if readcount=1 then          up(db);
+    down(db);                until false;
+  up(readsem);
+  Lies Daten;
+  down(readsem);
+  readcount := readcount-1;
+  if readcount=0 then
+    up(db);
+  up(readsem);
+until false;
+\end{verbatim}
+
+\textbf{Problem:} Schreiber können verhungern
+
+\subsection{Nachrichtenaustausch}
+\textbf{Konzept:} Kommunikation ohne gemeinsamen Speicher
+
+\textbf{Ringpuffer-Implementierung:}
+\begin{itemize}
+\item \textbf{Sender:} Erzeugt Nachrichten, legt sie in Puffer
+\item \textbf{Empfänger:} Entnimmt Nachrichten aus Puffer
+\item \textbf{Synchronisation:} Semaphore für "leer", "voll", "Zugriffschutz"
+\end{itemize}
+
+\textbf{Briefkasten-Prinzip:}
+\begin{itemize}
+\item \textbf{Einweg-Kommunikation:} A → B (unidirektional)
+\item \textbf{Zweiweg-Kommunikation:} A $\leftrightarrow$ B mit Bestätigung (acknowledgment)
+\end{itemize}
+
+\subsection{Monitore}
+\textbf{Konzept (Hoare 1974):}
+\begin{itemize}
+\item \textbf{Kapselung:} Daten + Prozeduren in einem Modul
+\item \textbf{Automatischer Mutex:} Nur ein Prozess zur Zeit im Monitor
+\item \textbf{Bedingungsvariablen:} Für komplexere Synchronisation
+\end{itemize}
+
+\textbf{Grundstruktur:}
+\begin{verbatim}
+monitor monitorname
+  Datendeklarationen;
+  
+  procedure prozedur1(...) { ... }
+  procedure prozedur2(...) { ... }
+  
+  begin
+    Initialisierung;
+  end monitor;
+\end{verbatim}
+
+\textbf{Bedingungsvariablen:}
+\begin{itemize}
+\item \textbf{wait(c):} Blockiert Prozess, gibt Monitor frei
+\item \textbf{signal(c):} Weckt einen wartenden Prozess (falls vorhanden)
+\end{itemize}
+
+\textbf{Erzeuger-Verbraucher mit Monitor:}
+\begin{verbatim}
+monitor erzeuger_verbraucher;
+  buffer : array[0..N-1] of item;
+  in, out, count : integer;
+  notfull, notempty : condition;
+  
+  procedure insert(x);
+  begin
+    if count = N then wait(notfull);
+    buffer[in] := x;
+    in := (in + 1) mod N;
+    count := count + 1;
+    signal(notempty);
+  end;
+  
+  procedure remove(x);
+  begin
+    if count = 0 then wait(notempty);
+    x := buffer[out];
+    out := (out + 1) mod N;
+    count := count - 1;
+    signal(notfull);
+  end;
+  
+begin
+  in := 0; out := 0; count := 0;
+end monitor;
+\end{verbatim}
+
+\subsection{Deadlocks (Systemverklemmungen)}
+\textbf{Definition:} Eine Menge von Prozessen befindet sich im Deadlock, wenn jeder Prozess auf ein Ereignis wartet, das nur von einem anderen Prozess der Menge ausgelöst werden kann.
+
+\textbf{Vier notwendige Bedingungen (Coffman et al.):}
+\begin{enumerate}
+\item \textbf{Wechselseitiger Ausschluss:} Ressourcen können nur exklusiv benutzt werden
+\item \textbf{Hold-and-Wait:} Prozesse halten Ressourcen und warten auf weitere
+\item \textbf{Keine Unterbrechung:} Ressourcen können nicht entzogen werden
+\item \textbf{Zyklisches Warten:} Geschlossene Kette von Prozessen und Ressourcen
+\end{enumerate}
+
+\textbf{Deadlock-Strategien:}
+
+\textbf{1. Erkennung und Beseitigung (Detection):}
+\begin{itemize}
+\item \textbf{Zustandsdarstellung:} Matrizen für Allokation, Anforderung, Verfügbarkeit
+\item \textbf{Erkennungsalgorithmus:} Suche nach beendbaren Prozessen
+\item \textbf{Beseitigung:} Prozesse abbrechen oder Ressourcen entziehen
+\end{itemize}
+
+\textbf{Erkennungsalgorithmus:}
+\begin{verbatim}
+for i := 1 to n do beendbar[i] := false;
+repeat
+  noch_einer_beendbar := false;
+  for i := 1 to n do
+    if not beendbar[i] then
+      if Anforderung[i] <= Verfügbar then
+      begin
+        beendbar[i] := true;
+        Verfügbar := Verfügbar + Allokation[i];
+        noch_einer_beendbar := true;
+      end;
+until not noch_einer_beendbar;
+
+deadlock := exists i: not beendbar[i];
+\end{verbatim}
+
+\textbf{2. Vermeidung (Avoidance):}
+\begin{itemize}
+\item \textbf{Banker-Algorithmus:} Basiert auf maximalen Anforderungen
+\item \textbf{Sichere Zustände:} Existiert Ausführungsreihenfolge ohne Deadlock
+\item \textbf{Problem:} Maximale Anforderungen meist unbekannt
+\end{itemize}
+
+\textbf{3. Verhinderung (Prevention):}
+\begin{itemize}
+\item \textbf{Wechselseitiger Ausschluss aufheben:} Meist unmöglich
+\item \textbf{Hold-and-Wait verhindern:} Alle Ressourcen auf einmal anfordern
+\item \textbf{Unterbrechung erlauben:} Ressourcenentzug (nicht immer möglich)
+\item \textbf{Lineare Ordnung:} Ressourcen nur in fester Reihenfolge anfordern
+\end{itemize}
+
+\textbf{4. Ignorieren ("Vogel-Strauß-Strategie"):}
+\begin{itemize}
+\item Problem wird ignoriert (Windows, Linux)
+\item Benutzer muss selbst eingreifen
+\item Begründung: Deadlocks sehr selten
+\end{itemize}
+
+\textbf{Übergreifende Strategie:}
+\begin{itemize}
+\item \textbf{Interne Ressourcen:} Verhinderung durch lineare Ordnung
+\item \textbf{Hauptspeicher:} Verhinderung durch Swapping
+\item \textbf{Prozessressourcen:} Vermeidung mit Voranmeldung
+\item \textbf{Swap-Bereich:} Verhinderung durch Vorausallokation
+\end{itemize}
 
 \section{KE 5: Geräte- \& Dateiverwaltung}
 

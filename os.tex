@@ -57,43 +57,127 @@
 \section{KE 1: Einführung \& Grundlagen}
 
 \subsection{Was ist ein Betriebssystem (BS)?}
-\textbf{Abstrakte Maschine:} Verbirgt Komplexität der Hardware, bietet einfache Schnittstelle (virtuelle Maschine).
+\textbf{Definition:} Menge von Programmen, die es ermöglichen, den Rechner zu betreiben und Anwendungsprogramme auf ihm auszuführen.
 
-\textbf{Ressourcen-Manager:} Verwaltet \& verteilt Ressourcen (CPU, Speicher, Geräte) fair und effizient.
-
-\subsection{Klassische Aufgaben eines BS}
+\textbf{Zwei Hauptsichten:}
 \begin{itemize}
-\item \textbf{Prozessverwaltung:} Erstellen, Beenden, Steuern von Prozessen
-\item \textbf{Speicherverwaltung:} Zuweisung und Verwaltung des Hauptspeichers
-\item \textbf{Geräteverwaltung:} Ansteuerung von Hardware über Treiber
-\item \textbf{Dateisystem-Management:} Organisation in Dateien \& Verzeichnissen
-\item \textbf{Schutz \& Sicherheit:} Prozesse voneinander isolieren
-\item \textbf{Benutzerschnittstelle:} Shell (CLI) oder GUI
+\item \textbf{Abstrakte/Virtuelle Maschine:} Verbirgt Hardware-Komplexität, bietet einfache Schnittstelle (API)
+\item \textbf{Ressourcen-Manager:} Verwaltet \& verteilt Ressourcen (CPU, Speicher, Geräte) fair und effizient
 \end{itemize}
 
-\subsection{Architektur \& Kernkonzepte}
+\subsection{Aufgaben eines Betriebssystems}
+\textbf{Klassische Aufgaben:}
 \begin{itemize}
-\item \textbf{Schichtenmodell:} Hardware → Kernel → Systemprogramme → Anwendungen
-\item \textbf{System- vs. Benutzermodus (Dual Mode):}
-  \begin{itemize}
-  \item \textit{User Mode:} Eingeschränkte Rechte für Anwendungen
-  \item \textit{Kernel Mode:} Volle Rechte für den BS-Kern. Kritische Befehle (z.B. I/O) nur hier möglich
-  \end{itemize}
-\item \textbf{Systemaufruf (Trap):} Der einzige, kontrollierte Weg vom User- in den Kernel-Modus
-\item \textbf{Interrupts:} Signal von Hardware (Geräte, Timer) an die CPU, das die Kontrolle an den Kernel übergibt
+\item \textbf{Gerätesteuerung:} Verbergen der Hardware-Besonderheiten, Anbieten von Diensten
+\item \textbf{Schutz:} Speicherschutz, Zugriffschutz zwischen Benutzern
+\item \textbf{Fehlerbehandlung:} Division durch 0, illegale Adressen, Hardware-Defekte
+\item \textbf{Mehrprogrammbetrieb:} Parallele Ausführung mehrerer Programme
+\item \textbf{Prozess-Synchronisation/-Kommunikation:} Nachrichtenaustausch, Synchronisation
+\item \textbf{Ressourcenverwaltung:} CPU, E/A-Geräte, Hauptspeicher, Kommunikationsverbindungen
+\item \textbf{Kommandosprache:} Textuelle/grafische Schnittstelle zum System
+\item \textbf{Administration:} Datensicherung, Systemkonfiguration, Leistungsüberwachung
 \end{itemize}
 
-\subsection{Prozesszustände (5-Zustands-Modell)}
+\subsection{Systemarchitektur \& Ebenenmodell}
+\textbf{Ebenenmodell (von unten nach oben):}
 \begin{enumerate}
-\item \textbf{erzeugt (new):} Prozess wird erstellt
-\item \textbf{bereit (ready):} Wartet auf CPU
-\item \textbf{rechnend (running):} Wird von CPU ausgeführt
-\item \textbf{blockiert (waiting):} Wartet auf Ereignis (z.B. I/O)
-\item \textbf{beendet (terminated):} Abgeschlossen
+\item \textbf{Digitale Logikebene:} Gatter, Boole'sche Funktionen
+\item \textbf{Mikroprogramm-Ebene:} Mikrobefehle, Mikroprogramme
+\item \textbf{Konventionelle Maschinenebene:} Maschinenbefehle des Prozessors
+\item \textbf{Betriebssystem-Ebene:} Systemaufrufe erweitern Maschinenebene
+\item \textbf{Assembler-Sprachen:} Lesbare Namen für Maschinenbefehle
+\item \textbf{Höhere Programmiersprachen:} Hardware-unabhängig
 \end{enumerate}
 
-\subsection{Prozesskontrollblock (PCB)}
-Die "Visitenkarte" des Prozesses für das BS. Enthält: PID, Zustand, Programmzähler, Register, Speicherinfos, offene Dateien etc.
+\textbf{Betriebssystem-Komponenten:}
+\begin{itemize}
+\item \textbf{Kern (Kernel):} Programme, die immer im Hauptspeicher sind
+\item \textbf{Standard-Bibliotheken:} Häufig benötigte Funktionen
+\item \textbf{Dienstprogramme (Utilities):} Administration, Textverarbeitung
+\end{itemize}
+
+\subsection{Hardware-Grundlagen}
+\textbf{Unterbrechungen (Interrupts):}
+\begin{itemize}
+\item \textbf{Hardware-Interrupts:} Asynchrone Signale von Geräten (E/A-Abschluss)
+\item \textbf{Software-Interrupts (Traps):} Synchron durch Programmfehler oder Systemaufrufe
+\item \textbf{Ablauf:} Signal → CPU unterbricht Programm → Unterbrechungsroutine → Programmfortsetzung
+\item \textbf{Unterbrechungsvektor:} Tabelle mit Adressen der Unterbrechungsroutinen
+\end{itemize}
+
+\textbf{Speicherschutz:}
+\begin{itemize}
+\item \textbf{Grenzregister:} Trennt Benutzer- und Betriebssystem-Bereich
+\item \textbf{Zweck:} Schutz des BS vor fehlerhaften/bösartigen Programmen
+\end{itemize}
+
+\textbf{System- und Benutzermodus:}
+\begin{itemize}
+\item \textbf{Benutzermodus (User Mode):} Eingeschränkte Befehle, Speicherschutz aktiv
+\item \textbf{Systemmodus (Kernel Mode):} Alle Befehle erlaubt, Speicherschutz deaktiviert
+\item \textbf{Supervisor Call (SVC):} Kontrollierter Übergang User→Kernel für Systemaufrufe
+\end{itemize}
+
+\subsection{Mehrprogrammbetrieb}
+\textbf{Motivation:}
+\begin{itemize}
+\item \textbf{Auslastungsverbesserung:} CPU arbeitet während E/A-Wartezeiten anderer Prozesse
+\item \textbf{Parallelität:} Mehrere Benutzer/Programme gleichzeitig
+\item \textbf{Virtueller Prozessor:} Jeder Prozess hat Eindruck einer eigenen CPU
+\end{itemize}
+
+\textbf{Zeitscheiben:}
+\begin{itemize}
+\item \textbf{Zeitgeber (Timer):} Hardware-Komponente für regelmäßige Unterbrechungen
+\item \textbf{Zeitscheibenablauf:} Unterbrechung nach Ablauf der zugeteilten Zeit
+\item \textbf{Prozesswechsel:} Umschaltung zwischen Prozessen
+\end{itemize}
+
+\subsection{Betriebsarten}
+\textbf{Interaktiver Betrieb (Dialog):}
+\begin{itemize}
+\item Sofortige Programmausführung, direkte Benutzer-Programm-Kommunikation
+\item Time-Sharing: Mehrbenutzer-Dialogsysteme
+\item Optimierungsziel: Kurze Antwortzeiten
+\end{itemize}
+
+\textbf{Stapelbetrieb (Batch):}
+\begin{itemize}
+\item Jobs werden in Warteschlange eingereiht, keine direkte Kommunikation
+\item Optimierungsziel: Maximale Ressourcenauslastung
+\item Höhere Durchsatzraten, längere Wartezeiten akzeptabel
+\end{itemize}
+
+\textbf{Hintergrundausführung:}
+\begin{itemize}
+\item Programme laufen parallel zu interaktiven Prozessen
+\item Keine direkte Benutzerinteraktion während der Ausführung
+\end{itemize}
+
+\textbf{Realzeitbetrieb:}
+\begin{itemize}
+\item Harte Zeitgrenzen müssen eingehalten werden
+\item Zeitkritische Prozesse haben höchste Priorität
+\item Erfordert speziell konstruierten Betriebssystemkern
+\end{itemize}
+
+\subsection{Systemstart (Bootstrap)}
+\textbf{Ladevorgang:}
+\begin{itemize}
+\item \textbf{Firmware/BIOS:} In ROM/EPROM gespeichert
+\item \textbf{Urlader (Bootstrap Loader):} Lädt Betriebssystem von Festplatte
+\item \textbf{Master Boot Record (MBR):} Enthält Startinformationen
+\item \textbf{Boot Manager:} Auswahl zwischen mehreren Betriebssystemen
+\end{itemize}
+
+\subsection{Historisches Beispiel: CP/M}
+\textbf{Komponenten:}
+\begin{itemize}
+\item \textbf{BIOS:} Hardware-abhängige Gerätetreiber
+\item \textbf{BDOS:} Hardware-unabhängige Dateiverwaltung
+\item \textbf{CCP:} Kommandointerpreter (Shell)
+\item \textbf{TPA:} Transient Program Area (Benutzerbereich)
+\end{itemize}
 
 \section{KE 2: Prozesse \& Scheduling}
 

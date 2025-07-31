@@ -183,36 +183,154 @@
 
 \subsection{Programm vs. Prozess}
 \begin{itemize}
-\item \textbf{Programm:} Passive Datei mit Anweisungen
-\item \textbf{Prozess:} Programm in Ausführung. Aktive Entität mit Zustand (Code, Daten, Programmzähler, Register, Stack)
+\item \textbf{Programm:} Statische Formulierung eines Algorithmus (Programmtext)
+\item \textbf{Prozess:} Ablaufendes Programm inklusive aktueller Stand des Befehlszählers, Registerinhalte und Hauptspeicherbereich mit Variablenbelegungen
 \end{itemize}
 
-\subsection{Threads (Leichtgewichtige Prozesse)}
+\subsection{Prozessmerkmale}
+\textbf{Prozesszustände:}
 \begin{itemize}
-\item Ein Prozess kann mehrere Threads haben
-\item \textbf{Teilen sich:} Code, Daten, geöffnete Dateien
-\item \textbf{Haben EIGENEN:} Programmzähler, Register, Stack
-\item \textbf{Vorteil:} Schnelleres Erstellen/Umschalten, einfache Kommunikation
+\item \textbf{erzeugt:} Datenstrukturen werden erstellt, Adressraum zugewiesen
+\item \textbf{bereit:} Rechenbereit, wartet auf Prozessorzuteilung
+\item \textbf{rechnend:} Prozessor ist zugeteilt, führt Anweisungen aus
+\item \textbf{blockiert:} Wartet auf Ereignis (z.B. E/A)
+\item \textbf{beendet:} Programmausführung ist beendet
 \end{itemize}
 
-\subsection{Scheduling (CPU-Zuteilung)}
-Der \textbf{Scheduler} wählt den nächsten Prozess aus der 'bereit'-Liste.
+\textbf{Speicherbereich eines Prozesses:}
+\begin{itemize}
+\item \textbf{Programmsegment:} Ausführbarer Code (ändert sich nicht)
+\item \textbf{Stacksegment:} Programmstack mit Aktivierungsblöcken
+\item \textbf{Datensegment:} Daten des Programms
+\end{itemize}
+
+\textbf{Prozesskontrollblock (PCB):}
+\begin{itemize}
+\item \textbf{Prozessidentifikation:} Eindeutige Prozess-ID
+\item \textbf{Prozessorstatus:} Programmzähler, alle Register
+\item \textbf{Prozesskontrollinformationen:} Zustand, Priorität, Speicherbereich, geöffnete Dateien, Buchhaltung, Besitzer
+\end{itemize}
+
+\subsection{Zustandsübergänge \& Prozesswechsel}
+\textbf{Wichtige Übergänge:}
+\begin{itemize}
+\item erzeugt → bereit (2): Ressourcen zugeteilt
+\item bereit → rechnend (3): Prozessor zugeteilt
+\item rechnend → blockiert (5): Warten auf Ereignis
+\item blockiert → bereit (6): Ereignis eingetreten
+\item rechnend → bereit (4): Zeitscheibe abgelaufen oder freiwillige Abgabe
+\item rechnend → beendet (7): Prozess terminiert
+\end{itemize}
+
+\textbf{Dispatcher:} Führt Prozesswechsel durch
+\begin{itemize}
+\item Sichert Prozessorzustand (Register, Programmzähler)
+\item Übergibt PCB an Scheduler
+\item Stellt Zustand des neuen Prozesses wieder her
+\end{itemize}
+
+\textbf{Präemptiv vs. Nicht-präemptiv:}
+\begin{itemize}
+\item \textbf{Nicht-präemptiv:} Nur Prozess selbst gibt Prozessor ab
+\item \textbf{Präemptiv:} Betriebssystem kann Prozessor entziehen (Timer-Interrupt)
+\end{itemize}
+
+\subsection{Scheduling-Strategien}
+\textbf{Qualitätsmaßstäbe:}
+\begin{itemize}
+\item Prozessorauslastung, Durchlaufzeit, Durchsatz, Antwortzeit, Fairness
+\item CPU burst: Zeit, die Prozess den Prozessor am Stück behalten will
+\end{itemize}
+
+\textbf{Nicht-präemptive Verfahren:}
 
 \begin{center}
-\begin{tabular}{|p{2.8cm}|p{2.5cm}|p{2.5cm}|}
+\begin{tabular}{|p{2.2cm}|p{2.8cm}|p{2.8cm}|}
 \hline
-\textbf{Algorithmus} & \textbf{Vorteil} & \textbf{Nachteil} \\
+\textbf{Verfahren} & \textbf{Vorteile} & \textbf{Nachteile} \\
 \hline
-\textbf{FCFS} (nicht-präemptiv) & Einfach, fair & Kurze Prozesse warten lange \\
+\textbf{FCFS} & Einfach, fair, geringer Verwaltungsaufwand & Kurze Prozesse warten lange (Convoy-Effekt) \\
 \hline
-\textbf{SJF} (nicht-präemptiv) & Optimal bzgl. avg. Wartezeit & Lange Prozesse können verhungern \\
+\textbf{SJF} & Minimale mittlere Wartezeit & Verhungern langer Prozesse, Bedienzeit unbekannt \\
 \hline
-\textbf{Priority} (präemptiv/nicht-p.) & Wichtige Prozesse bevorzugt & Niedrige Prioritäten können verhungern \\
-\hline
-\textbf{Round Robin} (präemptiv) & Sehr fair, gut für interaktive Systeme & Overhead durch Kontextwechsel \\
+\textbf{Priority} & Wichtige Aufgaben schnell & Verhungern bei statischen Prioritäten \\
 \hline
 \end{tabular}
 \end{center}
+
+\textbf{Präemptive Verfahren:}
+
+\begin{center}
+\begin{tabular}{|p{2.2cm}|p{2.8cm}|p{2.8cm}|}
+\hline
+\textbf{Verfahren} & \textbf{Vorteile} & \textbf{Nachteile} \\
+\hline
+\textbf{Round Robin} & Sehr fair, gut für interaktive Systeme & Overhead durch Kontextwechsel \\
+\hline
+\textbf{SRTF} & Optimal für bekannte Zeiten & Verhungern, viele Unterbrechungen \\
+\hline
+\textbf{Priority (präemptiv)} & Flexible Prioritäten & Komplexer \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Quantum-Wahl bei Round Robin:}
+\begin{itemize}
+\item Zu klein: Hoher Verwaltungsaufwand
+\item Zu groß: Schlechte Antwortzeiten
+\item Optimal: Etwas größer als typische Interaktionszeit
+\end{itemize}
+
+\subsection{Kombinierte Strategien}
+\textbf{Feedback Scheduling:}
+\begin{itemize}
+\item Berücksichtigt Vergangenheit des Prozesses
+\item Aging: Priorität steigt mit Wartezeit → verhindert Verhungern
+\item Rechenzeitabhängig: Neue Prozesse hohe Priorität + kleine Zeitscheibe
+\item Bei Quantumverbrauch: Niedrigere Priorität + größere Zeitscheibe
+\end{itemize}
+
+\textbf{Multiple Queues:}
+\begin{itemize}
+\item Verschiedene Klassen (System-, Dialog-, Hintergrundprozesse)
+\item Jede Klasse eigene Warteschlange + Scheduler
+\item Prozessorzeit-Verteilung zwischen Klassen (z.B. 60\%/30\%/10\%)
+\end{itemize}
+
+\textbf{Linux-Scheduler:}
+\begin{itemize}
+\item \textbf{O(1)-Scheduler:} Konstante Laufzeit, Prioritäten 0-139, aktive/abgelaufene Gruppen
+\item \textbf{CFS (Completely Fair):} Virtuelle Zeit pro Prozess, perfekte Fairness angestrebt
+\end{itemize}
+
+\subsection{Threads (Leichtgewichtige Prozesse)}
+\textbf{Konzept:}
+\begin{itemize}
+\item Mehrere Ausführungspfade pro Prozess
+\item \textbf{Gemeinsam:} Code, Daten, geöffnete Dateien
+\item \textbf{Separat:} Programmzähler, Register, Stack
+\end{itemize}
+
+\textbf{Realisierungen:}
+\begin{center}
+\begin{tabular}{|p{3.5cm}|p{4.3cm}|}
+\hline
+\textbf{Benutzer-Threads} & \textbf{Kernel-Threads} \\
+\hline
++ Einfache Realisierung & + Echte Parallelität auf Multiprozessoren \\
++ Schnelles Umschalten & + Ein blockierender Thread stoppt nicht alle \\
+- Blockierung stoppt alle & - Aufwändige Realisierung \\
+- Keine echte Parallelität & - Langsameres Umschalten \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Anwendungsgebiete:}
+\begin{itemize}
+\item Mehrprozessor-Maschinen (Parallelisierung)
+\item Gerätetreiber (parallele Anfragen-Bearbeitung)
+\item Verteilte Systeme (Server mit mehreren Clients)
+\end{itemize}
 
 \section{KE 3: Hauptspeicherverwaltung}
 

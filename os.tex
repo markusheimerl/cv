@@ -1242,28 +1242,286 @@ FAT[3] = 27, FAT[27] = 19, FAT[19] = nil
 
 \section{KE 6: Sicherheit}
 
-\subsection{Ziele \& Begriffe}
+\subsection{Grundlagen der Sicherheit}
+\textbf{Taxonomie der Sicherheit:}
 \begin{itemize}
-\item \textbf{Ziele:} Vertraulichkeit, Integrität, Verfügbarkeit
-\item \textbf{Subjekt:} Aktive Entität (Prozess, Benutzer)
-\item \textbf{Objekt:} Passive Entität (Datei, Gerät)
+\item \textbf{Schäden:} Verlust der Vertraulichkeit, Integrität, Verfügbarkeit; finanzieller Verlust; Missbrauch
+\item \textbf{Bedrohungen:} Unerwünschte/unerlaubte Vorgänge (unzulässige Aktionen, Fehlverhalten, Materialfehler, Eindringlinge)
+\item \textbf{Sicherheitsmaßnahmen:} Verhindern, begrenzen oder entdecken von Schäden
 \end{itemize}
 
-\subsection{Kernmechanismen}
-\textbf{Authentisierung:} Wer bist du? (Passwort)
+\textbf{Sicherheit im engeren Sinn:} Schutz vor ungewollter/unerlaubter Benutzung eines Rechners (nicht: Programmierfehler, Hardware-Defekte)
 
-\textbf{Autorisierung (Zugriffskontrolle):} Was darfst du?
+\textbf{Primäre vs. Sekundäre Bedrohungen:}
 \begin{itemize}
-\item \textbf{ACL (Access Control List):} Pro Objekt eine Liste mit Rechten für Subjekte
-\item \textbf{Capability:} Pro Subjekt eine Liste mit Tickets für Objekte
+\item \textbf{Primäre Bedrohung:} Unabhängig vom Rechner (z.B. Diebstahl)
+\item \textbf{Sekundäre Bedrohung:} Entstehen durch Rechnereinsatz (z.B. schwache Authentisierung)
 \end{itemize}
 
-\textbf{DAC (Discretionary):} Besitzer legt Rechte fest
-
-\textbf{MAC (Mandatory):} System erzwingt globale Regeln
+\subsection{Sicherheitsstrategien}
+\textbf{Organisatorische vs. Automatisierte Sicherheitsstrategie:}
 \begin{itemize}
-\item \textbf{Bell-LaPadula (Vertraulichkeit):} "No Read Up, No Write Down"
-\item \textbf{Biba (Integrität):} "No Read Down, No Write Up"
+\item \textbf{Organisatorische:} Gesetze, Vorschriften, Regeln, Praktiken
+\item \textbf{Automatisierte:} Durch Rechner realisierte Sicherheitsmaßnahmen
+\item \textbf{Wichtig:} Automatisierte ergänzt organisatorische, ersetzt sie nicht!
+\end{itemize}
+
+\textbf{Schichtenmodell der Sicherheit:}
+\begin{enumerate}
+\item Hardware (Speicherschutz, privilegierte Modi)
+\item Betriebssystem (Systemaufrufe, Dateischutz)
+\item Datenbanksysteme/Middleware
+\item Anwendungsprogramme
+\end{enumerate}
+
+\subsection{Sicherheitsklassifikationen}
+\textbf{Orange Book (TCSEC85):}
+\begin{itemize}
+\item \textbf{Klasse D:} Keine Sicherheit
+\item \textbf{Klasse C:} Diskretionärer Schutz (C1, C2)
+\item \textbf{Klasse B:} Mandatory Access Control (B1, B2, B3)
+\item \textbf{Klasse A:} Mathematisch beweisbar sicher
+\end{itemize}
+
+\textbf{ITSEC (Information Technology Security Evaluation Criteria):}
+\begin{itemize}
+\item \textbf{F1-F2:} Entspricht C1-C2 (die meisten Unix/Linux/Windows-Systeme)
+\item \textbf{F3-F5:} Entspricht B1-B3 (Zugriffskontrolle mit Sicherheitsstufen)
+\item \textbf{F6-F10:} Integrität, Verfügbarkeit, Netzwerksicherheit
+\end{itemize}
+
+\subsection{Funktionsbereiche der Sicherheit}
+\textbf{Identifikation und Authentisierung:}
+\begin{itemize}
+\item \textbf{Identifikation:} Wer bist du? (Benutzername)
+\item \textbf{Authentisierung:} Beweise deine Identität!
+\item \textbf{Drei Faktoren:}
+  \begin{itemize}
+  \item Wissen (Passwort)
+  \item Besitz (Schlüssel, Karte)
+  \item Eigenschaften (Biometrie)
+  \end{itemize}
+\end{itemize}
+
+\textbf{Zugriffskontrollen:}
+\begin{itemize}
+\item Rechteverwaltung und Rechteprüfung
+\item Kontrolle von Informationsfluss, Zugang, Ressourcennutzung
+\item \textbf{Least Privilege Principle:} Nur minimal benötigte Rechte gewähren
+\end{itemize}
+
+\textbf{Beweissicherung/Audit:}
+\begin{itemize}
+\item Protokollierung sicherheitsrelevanter Ereignisse
+\item Erkennung von Missbrauch und Penetrationsversuchen
+\item Parametrisierbar nach Art und Umfang
+\end{itemize}
+
+\textbf{Speicherschutz:}
+\begin{itemize}
+\item Initialisierung von Speicherbereichen vor Wiederverwendung
+\item Verhindert unzulässigen Informationsfluss
+\end{itemize}
+
+\subsection{Benutzerverwaltung und -identifikation}
+\textbf{Drei Stufen der Zugriffskontrolle:}
+\begin{enumerate}
+\item \textbf{Zulassung als Benutzer}
+\item \textbf{Benutzerprofile} (generelle Beschränkungen)
+\item \textbf{Zugriffskontrollen} (objektspezifische Rechte)
+\end{enumerate}
+
+\textbf{Benutzerverwaltung:}
+\begin{itemize}
+\item \textbf{Gespeicherte Daten:} Name, interne ID, Authentisierungsdaten, Profil, Zeitstempel
+\item \textbf{UID (User ID):} Eindeutige Nummer (0-65535)
+\item \textbf{Superuser/root:} UID 0, kann alle Schutzmechanismen umgehen
+\end{itemize}
+
+\textbf{Benutzergruppen:}
+\begin{itemize}
+\item \textbf{GID (Group ID):} Eindeutige Gruppennummer
+\item \textbf{Mitgliedschaft:} Durch Systemadministrator oder Authentisierung
+\item \textbf{Aktivierung:} Nicht alle Gruppen gleichzeitig aktiv
+\item \textbf{Strategien:} Eine Gruppe (UNIX System V), mehrere Gruppen, hierarchische Gruppen
+\end{itemize}
+
+\textbf{Authentisierung:}
+\begin{itemize}
+\item \textbf{Passwort-Regeln:}
+  \begin{itemize}
+  \item Mindestens 8 Zeichen
+  \item Klein- und Großbuchstaben
+  \item Sonderzeichen/Zahlen
+  \item Nicht in Wörterbüchern
+  \item Regelmäßige Änderung
+  \end{itemize}
+\item \textbf{Verschlüsselte Speicherung:} Auch Superuser kann Passwörter nicht lesen
+\end{itemize}
+
+\textbf{Programme als Subjekte:}
+\begin{itemize}
+\item \textbf{Problem:} Zu grobkörnige Rechte für Benutzer
+\item \textbf{Lösung:} Programme erhalten eigene Rechte
+\item \textbf{SETUID-Bit:} Programm läuft mit Rechten des Besitzers, nicht des Aufrufers
+\item \textbf{Gefahren:} Alle Rechte des Besitzers, nicht nur benötigte!
+\end{itemize}
+
+\subsection{Benutzerprofile}
+\textbf{Generelle Benutzungsbeschränkungen:}
+\begin{itemize}
+\item \textbf{Kommandosprache:} Einschränkung verfügbarer Befehle
+\item \textbf{Quota:} Quantitative Beschränkungen (CPU-Zeit, Speicher, Druckerpapier)
+\item \textbf{Sicherheitsfunktionen:} Verbot von Break-Taste, Subprozessen, Passwort-Änderung
+\item \textbf{Rollen:} Gast/Benutzer/Operator/Administrator mit vordefinierten Privilegien
+\item \textbf{Zeit/Ort:} Beschränkung auf Bürozeiten, bestimmte Terminals/Netzwerke
+\end{itemize}
+
+\subsection{Zugriffskontrollen - Grundlagen}
+\textbf{Subjekte und Objekte:}
+\begin{itemize}
+\item \textbf{Subjekt:} Aktive Einheit (Benutzer, Gruppen, Programme, Prozesse)
+\item \textbf{Objekt:} Passive Einheit (Dateien, Verzeichnisse, Geräte, Speicherseiten)
+\item \textbf{Zugriffsmodi:} Gruppierung von Operationen (r, w, x, a, n, d, o)
+\end{itemize}
+
+\textbf{Geschlossene vs. Offene Systeme:}
+\begin{itemize}
+\item \textbf{Geschlossen:} Erlaubt ist nur, was explizit erlaubt ist (Standard)
+\item \textbf{Offen:} Verboten ist nur, was explizit verboten ist (unsicher)
+\end{itemize}
+
+\textbf{Persistenter vs. Transienter Rechtezustand:}
+\begin{itemize}
+\item \textbf{Persistent:} Überdauert Systemabschaltung (Dateien)
+\item \textbf{Transient:} Prozessspezifisch, vergänglich (geöffnete Dateien)
+\end{itemize}
+
+\subsection{Diskretionäre Zugriffskontrollen (DAC)}
+\textbf{Konzept:}
+\begin{itemize}
+\item Zugriffskontrolle basierend auf Identität von Subjekten/Gruppen
+\item \textbf{Diskretionär:} Besitzer entscheidet über Rechte
+\item \textbf{Schwäche:} Kann Informationsfluss nicht kontrollieren!
+\end{itemize}
+
+\textbf{Abstrakter Rechtezustand:}
+\begin{itemize}
+\item Abbildung: \texttt{zugriff: S × O × M → W}
+\item S = Subjekte, O = Objekte, M = Modi, W = {erlaubt, verboten}
+\item \textbf{Zugriffskontrollmatrix:} Zeilen=Subjekte, Spalten=Objekte
+\end{itemize}
+
+\subsubsection{Granulatorientierte Implementierungen}
+\textbf{Zugriffskontrolllisten (ACL):}
+\begin{itemize}
+\item \textbf{Pro Objekt:} Liste von (Subjekt, Modi)-Paaren
+\item \textbf{ACL-Auswertung:}
+  \begin{itemize}
+  \item \textbf{Sequenz:} Erste passende Regel entscheidet
+  \item \textbf{Menge:} Rechte werden addiert (erlaubt, wenn mindestens ein Subjekt erlaubt)
+  \end{itemize}
+\item \textbf{Dreiwertige Logik:} erlaubt/nicht explizit erlaubt/explizit verboten
+\item \textbf{Benannte ACLs:} Mehrere Objekte teilen sich eine ACL
+\end{itemize}
+
+\textbf{Schutzbits (UNIX):}
+\begin{itemize}
+\item \textbf{User/Group/Others:} 3×3 Bits für rwx-Rechte
+\item \textbf{Beispiel:} \texttt{rwxr-xr--} = Besitzer: rwx, Gruppe: rx, Others: r
+\item \textbf{SETUID-Bit:} Ausführung mit Rechten des Dateibesitzers
+\item \textbf{Einschränkung:} Nur 3 Subjekttypen, begrenzte Modi
+\end{itemize}
+
+\textbf{Besitzer-Konzept:}
+\begin{itemize}
+\item \textbf{Owner-Modus:} Berechtigung zur Änderung der ACL
+\item \textbf{Exklusiver Besitzer:} Genau ein Besitzer pro Objekt
+\item \textbf{Delegierung:} Weiterübertragung von Rechten in Ketten
+\end{itemize}
+
+\subsubsection{Subjektorientierte Implementierungen}
+\textbf{Profile:}
+\begin{itemize}
+\item \textbf{Pro Subjekt:} Liste von (Objekt, Modi)-Paaren
+\item \textbf{Nachteile:} Hohe Anzahl Objekte, schwierige Objektverwaltung
+\item \textbf{Einsatz:} Hauptsächlich für transiente Rechte
+\end{itemize}
+
+\textbf{Capabilities:}
+\begin{itemize}
+\item \textbf{Konzept:} "Schlüssel" für direkten Objektzugriff
+\item \textbf{Capability-Ticket:} Berechtigung + Objektreferenz
+\item \textbf{Schutz vor Manipulation:}
+  \begin{itemize}
+  \item Hardware: Zusätzliches Bit pro Speicherwort
+  \item Betriebssystem: Capability-Listen im Kernel
+  \item Verschlüsselung: Geschützte Capabilities im Benutzerraum
+  \end{itemize}
+\item \textbf{Beispiel:} UNIX-Dateideskriptoren (Zeiger in globale Dateitabelle)
+\end{itemize}
+
+\subsection{Informationsflusskontrolle (MAC)}
+\textbf{Problem mit DAC:} Benutzer können Informationen unkontrolliert weitergeben
+
+\textbf{Grundidee MAC:} System kontrolliert Informationsfluss automatisch
+
+\subsubsection{Bell-LaPadula-Modell (Vertraulichkeit)}
+\textbf{Sicherheitsklassen:} Jedes Subjekt/Objekt hat Vertraulichkeitsstufe (Zahl)
+
+\textbf{Zugriffsregeln:}
+\begin{itemize}
+\item \textbf{Einfache Geheimhaltung:} Prozess darf nur Objekte lesen, die nicht höher klassifiziert sind ("No Read Up")
+\item \textbf{*-Eigenschaft:} Prozess darf nur in Objekte schreiben, die nicht niedriger klassifiziert sind ("No Write Down")
+\item \textbf{Ruhe-Prinzip:} Klassifikation von Objekten kann nicht verändert werden
+\end{itemize}
+
+\textbf{Kommunikationsregel:} Prozess P1 darf P2 nur Daten senden, wenn Klasse(P1) $\leq$ Klasse(P2)
+
+\subsubsection{Biba-Modell (Integrität)}
+\textbf{Dual zu Bell-LaPadula:}
+\begin{itemize}
+\item \textbf{Einfache Integritätsbedingung:} Lesen nur von höherer/gleicher Integritätsstufe
+\item \textbf{*-Eigenschaft für Integrität:} Schreiben nur in niedrigere/gleiche Integritätsstufe
+\end{itemize}
+
+\textbf{Beispiel:} Leutnant kann Befehl des Generals nicht verändern
+
+\subsubsection{Erweiterte Konzepte}
+\textbf{Gleitende Klassen:}
+\begin{itemize}
+\item Automatische Anhebung der Prozess-/Objektklasse bei Bedarf
+\item \textbf{Problem:} Daten werden tendenziell immer geheimer
+\item \textbf{Lösung:} Abschaltbares Gleiten
+\end{itemize}
+
+\textbf{Vertrauenswürdiges Ändern (Trusted Downgrade/Upgrade):}
+\begin{itemize}
+\item Spezielle Subjekte dürfen Klassifikationen ändern
+\item Durchbricht automatisierte Strategie, aber nicht organisatorische
+\item Begrenzte Anzahl vertrauenswürdiger Personen
+\end{itemize}
+
+\subsection{Sicherheitsfunktionen in der Praxis}
+\textbf{Implementierung erfordert Hardware-Unterstützung:}
+\begin{itemize}
+\item Speicherschutzmechanismen
+\item Privilegierte/nicht-privilegierte Modi
+\item Schutz von Geräte-Schnittstellen
+\end{itemize}
+
+\textbf{Verteilte Spezifikation:}
+\begin{itemize}
+\item Spezielle Systemaufrufe (chmod, chgrp)
+\item Fehlercodes in allen relevanten Systemaufrufen
+\item Sicherheitsaspekte in der Semantik vieler Operationen
+\end{itemize}
+
+\textbf{Typische Kombination:}
+\begin{itemize}
+\item \textbf{Dateien:} Diskretionäre Kontrolle (ACLs/Schutzbits)
+\item \textbf{Sensible Systeme:} Zusätzlich mandatory Kontrolle
+\item \textbf{Netzwerke:} Spezielle Übertragungssicherung
 \end{itemize}
 
 \section{KE 7: Kommandosprachen}

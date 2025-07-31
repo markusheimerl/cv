@@ -912,24 +912,332 @@ deadlock := exists i: not beendbar[i];
 \item \textbf{Swap-Bereich:} Verhinderung durch Vorausallokation
 \end{itemize}
 
-\section{KE 5: Geräte- \& Dateiverwaltung}
+\section{KE 5: Geräteverwaltung \& Dateisysteme}
 
-\subsection{Geräteverwaltung}
+\subsection{Ein-/Ausgabe-Geräte}
+\textbf{Gerätetypen nach Zweck:}
 \begin{itemize}
-\item \textbf{Controller:} Hardware, die Geräte steuert
-\item \textbf{Gerätetreiber:} Software, die mit dem Controller kommuniziert
-\item \textbf{DMA (Direct Memory Access):} Ermöglicht Datentransfer zwischen Gerät und Speicher ohne CPU-Beteiligung
+\item \textbf{Sekundärspeicher:} Permanente Speicherung (Festplatten, Bänder, optische Speicher)
+  \begin{itemize}
+  \item Arbeitsdaten: Täglich benötigt, schneller Zugriff
+  \item Sicherungskopien: Backup-Daten, langsamerer Zugriff OK
+  \item Archivierte Daten: Langzeitspeicherung (Jahrzehnte)
+  \end{itemize}
+\item \textbf{Ausgabegeräte:} Bildschirme, Drucker, Lautsprecher
+\item \textbf{Eingabegeräte:} Tastaturen, Mäuse, Scanner
+\item \textbf{Kommunikationsgeräte:} Ethernet, Modems, WLAN
 \end{itemize}
 
-\subsection{Dateisystem}
+\textbf{Gerätetypen nach Übertragungseinheit:}
 \begin{itemize}
-\item \textbf{Datei:} Abstraktion für permanenten Speicher
-\item \textbf{Verzeichnis:} Hierarchische Struktur zur Organisation
-\item \textbf{Dateizuordnung} (Wie werden Blöcke gespeichert?):
+\item \textbf{Block-Geräte:} Übertragung in Blöcken fester Größe (Festplatten, Bänder)
+\item \textbf{Zeichen-Geräte:} Byteweise Übertragung ohne Blockstruktur (Terminals, Drucker)
+\end{itemize}
+
+\subsection{Ein-/Ausgabe-Kommunikationstechniken}
+\textbf{Controller (Geräte-Steuereinheit):}
+\begin{itemize}
+\item Hardware zwischen CPU und Geräten
+\item Mehrere Geräte pro Controller möglich (z.B. USB: bis 127 Geräte)
+\item Entlastet CPU von elementaren Steuerungsaufgaben
+\item Eigene Prozessoren für Prüfsummen, Fehlerkorrektur
+\end{itemize}
+
+\textbf{CPU-Controller-Kommunikation:}
+\begin{itemize}
+\item \textbf{I/O-Ports:} Spezielle Befehle \texttt{IN/OUT} für Registeradressen
+\item \textbf{Memory-mapped I/O:} Controller-Register im Hauptspeicher-Adressraum
+\end{itemize}
+
+\textbf{Drei E/A-Techniken:}
+
+\textbf{1. Programmgesteuerte E/A:}
+\begin{itemize}
+\item CPU fragt Statusregister ab (Polling, Busy Waiting)
+\item Synchrone Abarbeitung
+\item \textbf{Nachteil:} CPU komplett belegt bis E/A beendet
+\end{itemize}
+
+\textbf{2. Interrupt-gesteuerte E/A:}
+\begin{itemize}
+\item \textbf{Ablauf:} CPU gibt Auftrag → wird blockiert → Interrupt bei Fertigstellung → CPU fortgesetzt
+\item Ermöglicht überlappende E/A-Operationen
+\item CPU kann andere Prozesse bearbeiten
+\end{itemize}
+
+\textbf{3. DMA (Direct Memory Access):}
+\begin{itemize}
+\item Controller kann direkt auf Hauptspeicher zugreifen
+\item \textbf{DMA-Register:} Quelle, Ziel, Anzahl Bytes, Richtung
+\item CPU nur für Initialisierung und Abschluss involviert
+\item \textbf{Ablauf:} CPU initialisiert → DMA überträgt → Interrupt bei Fertigstellung
+\end{itemize}
+
+\subsection{E/A-Software-Schichtenmodell}
+\textbf{Von unten nach oben:}
+\begin{enumerate}
+\item \textbf{Interrupt-Handler:} Verarbeitet alle Unterbrechungen
+\item \textbf{Gerätetreiber:} Geräteabhängige Funktionen
   \begin{itemize}
-  \item \textbf{FAT (File Allocation Table):} Verkettete Liste der Blöcke in zentraler Tabelle
-  \item \textbf{i-node (Index-Node):} Datenstruktur pro Datei mit Metadaten und Zeigern (direkt/indirekt) auf Datenblöcke (Standard in UNIX)
+  \item Ein Treiber pro Controller-Typ
+  \item Übersetzt abstrakte Befehle in konkrete Hardware-Operationen
+  \item Beispiel: Blockadresse → Zylinder, Sektor, Oberfläche
   \end{itemize}
+\item \textbf{Geräteunabhängige E/A-Software:}
+  \begin{itemize}
+  \item Einheitliche Schnittstelle für alle Geräte
+  \item Pufferung, Fehlerbehandlung, Gerätezuteilung
+  \end{itemize}
+\item \textbf{Benutzer-E/A-Software:} Systemaufrufe, Libraries
+\end{enumerate}
+
+\textbf{Wichtige Funktionen der geräteunabhängigen Schicht:}
+\begin{itemize}
+\item \textbf{E/A-Auftragslistenverwaltung:} Warteschlangen pro Gerät
+\item \textbf{Gerätezustandstabelle:} Status aller angeschlossenen Geräte
+\item \textbf{Pufferung:} Double Buffering, Ringpuffer für Effizienz
+\item \textbf{Spooling:} Simulation exklusiver Geräte (Drucker)
+\item \textbf{Geräteallokation:} Zuteilung und Freigabe von Geräten
+\end{itemize}
+
+\subsection{Festplatten (Magnetplatten)}
+\textbf{Physischer Aufbau:}
+\begin{itemize}
+\item \textbf{Scheiben:} Mehrere übereinander (2-10), gemeinsame Achse
+\item \textbf{Oberflächen:} Beide Seiten jeder Scheibe beschichtet
+\item \textbf{Arme:} Bewegliche Lese-/Schreibköpfe zwischen Scheiben
+\item \textbf{Spuren:} Kreisförmige Linien auf Oberflächen
+\item \textbf{Zylinder:} Spuren gleichen Radius übereinander
+\item \textbf{Sektoren:} Unterteilung der Spuren (0,5-4 KB)
+\end{itemize}
+
+\textbf{Sektoradressierung:}
+\begin{itemize}
+\item \textbf{Sektoradresse:} (Zylinder z, Oberfläche o, Sektor s)
+\item \textbf{Sektornummer:} $(z \times O + o) \times S + s$
+\item Wo O = Anzahl Oberflächen, S = Sektoren pro Spur
+\end{itemize}
+
+\textbf{Zugriffszeiten:}
+\begin{itemize}
+\item \textbf{Suchzeit:} Positionierung der Köpfe (1-10 ms)
+\item \textbf{Latenzzeit:} Warten auf richtigen Sektor (durchschnittlich halbe Umdrehung, 2,8-7 ms)
+\item \textbf{Übertragungszeit:} Datentransfer ($T = \frac{b}{\omega n}$ Sekunden für b Bytes)
+\item \textbf{Gesamte Zugriffszeit = Suchzeit + Latenzzeit + Übertragungszeit}
+\end{itemize}
+
+\textbf{Optimierungsverfahren:}
+\begin{itemize}
+\item \textbf{SSTF (Shortest Seek Time First):} Nächster Auftrag mit geringster Suchzeit
+  \begin{itemize}
+  \item Problem: Starvation möglich
+  \end{itemize}
+\item \textbf{SCAN (Elevator):} Arme wandern alternierend nach außen/innen
+  \begin{itemize}
+  \item Verhindert Starvation, faire Bedienung
+  \end{itemize}
+\item \textbf{Interleaving:} Sektoren überspringen beim Schreiben
+  \begin{itemize}
+  \item Grund: Zeit für Datenübertragung zum Hauptspeicher
+  \item Interleave Factor bestimmt Anzahl übersprungener Sektoren
+  \end{itemize}
+\end{itemize}
+
+\textbf{Partitionierung:}
+\begin{itemize}
+\item \textbf{Master Boot Record (MBR):} Sektor 0 mit Bootcode und Partitionstabelle
+\item \textbf{Partitionstypen:} Primär (max. 4), erweitert mit logischen Laufwerken
+\item \textbf{High-Level-Formatierung:} Anlegen des Dateisystems pro Partition
+\end{itemize}
+
+\subsection{Optische Speicher \& Flash}
+\textbf{Optische Platten:}
+\begin{itemize}
+\item \textbf{CD-ROM:} Nur lesbar, ~650 MB
+\item \textbf{CD-R/DVD±R:} Einmal beschreibbar
+\item \textbf{CD-RW/DVD±RW:} Wiederbeschreibbar
+\item \textbf{Blu-ray:} Bis 25 GB pro Layer
+\item Langsamere Übertragung als Festplatten, aber wechselbar
+\end{itemize}
+
+\textbf{Flash-Speicher (SSD):}
+\begin{itemize}
+\item \textbf{NAND vs. NOR:} NAND für Massenspeicher, NOR für Code
+\item \textbf{Erase Blocks:} 128-256 KB, nur blockweise löschbar
+\item \textbf{Pages:} Kleinste Lese-/Schreibeinheit innerhalb Block
+\item \textbf{Wear Leveling:} Gleichmäßige Abnutzung aller Blöcke
+\item \textbf{Garbage Collection:} Aufräumen ungültiger Daten
+\end{itemize}
+
+\textbf{Flash Translation Layer (FTL):}
+\begin{itemize}
+\item \textbf{Adressübersetzung:} Logische → physische Blöcke
+\item \textbf{Bad Block Management:} Defekte Blöcke ausblenden
+\item \textbf{Wear Leveling:} Hot/Cold Data auf Young/Old Blocks verteilen
+\end{itemize}
+
+\subsection{Dateisysteme - Grundlagen}
+\textbf{Datei-Konzept:}
+\begin{itemize}
+\item \textbf{Datei:} Sammlung zusammengehöriger Informationen
+\item \textbf{Dateisystem:} Menge von Dateien + Verzeichnissen + Hilfsdaten
+\item \textbf{Transparenz:} Details der Speicherung verborgen
+\end{itemize}
+
+\textbf{Dateierungen:}
+\begin{itemize}
+\item Beliebig viele Dateien verschiedener Größe
+\item Sinnvolle Organisation in Verzeichnissen
+\item Strukturierte Zugriffe (Zeichen, Sätze)
+\item Zugriffskontrolle zwischen Benutzern
+\end{itemize}
+
+\subsection{Dateiverzeichnisse}
+\textbf{Hierarchische Dateisysteme:}
+\begin{itemize}
+\item \textbf{Wurzelverzeichnis:} Einstiegspunkt ins Dateisystem
+\item \textbf{Pfadnamen:}
+  \begin{itemize}
+  \item \textbf{Absolut:} Beginnend mit \texttt{/} oder \texttt{\textbackslash}
+  \item \textbf{Relativ:} Bezogen auf aktuelles Arbeitsverzeichnis
+  \end{itemize}
+\item \textbf{Navigation:} \texttt{cd} für Verzeichniswechsel, \texttt{..} für Elternverzeichnis
+\end{itemize}
+
+\textbf{Dateiattribute:}
+\begin{itemize}
+\item \textbf{Größe:} Aktuelle Dateigröße in Bytes
+\item \textbf{Besitzer:} Kontrolle über Zugriffsrechte
+\item \textbf{Zugriffsrechte:} Lesen, Schreiben, Ausführen
+\item \textbf{Zeitstempel:} Erstellung, letzter Zugriff, letzte Änderung
+\item \textbf{Dateityp:} Anwendbare Zugriffsmethode
+\item \textbf{Speicherort:} Verweise auf Datenblöcke
+\end{itemize}
+
+\subsection{Verwaltung der Dateisektoren}
+\textbf{1. File Allocation Table (FAT):}
+\begin{itemize}
+\item \textbf{Prinzip:} Zentrale Tabelle mit einem Eintrag pro Sektor
+\item \textbf{Verkettung:} Sektoren einer Datei als verknüpfte Liste
+\item \textbf{Startsektor:} Steht im Verzeichniseintrag
+\item \textbf{Vorteile:} Einfach, gut für sequentiellen Zugriff
+\item \textbf{Nachteile:} Gesamte FAT muss im RAM sein (bei 20 GB $\approx$ 80 MB)
+\end{itemize}
+
+\textbf{Beispiel FAT-Eintrag:}
+\begin{verbatim}
+Datei "spiel" in Sektoren 3,27,19:
+Verzeichnis: spiel → Startsektor 3
+FAT[3] = 27, FAT[27] = 19, FAT[19] = nil
+\end{verbatim}
+
+\textbf{2. i-nodes (Index-Nodes):}
+\begin{itemize}
+\item \textbf{Prinzip:} Separate Datenstruktur pro Datei
+\item \textbf{Inhalt:} Dateimetadaten + Zeiger auf Datenblöcke
+\item \textbf{Mehrstufige Indirektion:}
+  \begin{itemize}
+  \item 10 direkte Zeiger (Blöcke 0-9)
+  \item 1 einfach indirekter Zeiger (Blöcke 10 bis 9+x)
+  \item 1 doppelt indirekter Zeiger (Blöcke 10+x bis 9+x+x²)
+  \item 1 dreifach indirekter Zeiger (Blöcke 10+x+x² bis 9+x+x²+x³)
+  \end{itemize}
+\item \textbf{Vorteile:} Nur benötigte i-nodes im RAM, gut für kleine/große Dateien
+\item \textbf{Beispiel:} x=256 → max. Dateigröße $\approx$ 16 GB
+\end{itemize}
+
+\textbf{3. NTFS (NT File System):}
+\begin{itemize}
+\item \textbf{MFT (Master File Table):} Array von 1 KB-Einträgen
+\item \textbf{Sektorfolgen:} Kompakte Darstellung zusammenhängender Blöcke
+\item \textbf{Format:} (Startblock, Länge) statt einzelner Blockadressen
+\item \textbf{Journaling:} Protokollierung aller Operationen für Crash-Recovery
+\item \textbf{Eindeutige Nummern:} 48 Bit Position + 16 Bit Sequenznummer
+\end{itemize}
+
+\subsection{Verwaltung freier Sektoren}
+\textbf{1. Verkettete Liste:}
+\begin{itemize}
+\item Alle freien Sektoren als verknüpfte Liste
+\item \textbf{Bei FAT:} Nutzung der FAT-Struktur selbst
+\item \textbf{Bei Direktverwaltung:} Folgezeiger im Sektor selbst (I/O-intensiv)
+\item \textbf{Verbesserung:} Gruppierung (x Nummern pro Indexblock)
+\end{itemize}
+
+\textbf{2. Bitmap:}
+\begin{itemize}
+\item \textbf{Ein Bit pro Sektor:} 1=frei, 0=belegt
+\item \textbf{Vorteile:} Einfaches Löschen, wortweise Suche möglich
+\item \textbf{Nachteile:} Bei fast voller Platte langsame Suche
+\item \textbf{Speicherbedarf:} Bei 20 GB $\approx$ 2,5 MB für Bitmap
+\end{itemize}
+
+\subsection{Optimierungen}
+\textbf{E/A-Puffer:}
+\begin{itemize}
+\item \textbf{Zweck:} Zwischenspeicherung für mehrere Prozesse
+\item \textbf{Double Buffering:} Ein Puffer wird gefüllt, anderer geleert
+\item \textbf{Cache-Strategien:} LRU, FIFO für Pufferersetzung
+\end{itemize}
+
+\textbf{Asynchrones Schreiben:}
+\begin{itemize}
+\item \textbf{Synchron:} Warten bis Daten auf Platte (sicher)
+\item \textbf{Asynchron:} Rückkehr nach Pufferung (schnell)
+\end{itemize}
+
+\textbf{Vorausschauendes Lesen:}
+\begin{itemize}
+\item Bei sequentiellem Zugriff: Nächste Blöcke vorab laden
+\item Read-ahead basierend auf Zugriffsmuster
+\end{itemize}
+
+\textbf{Suchzeitreduktion:}
+\begin{itemize}
+\item \textbf{i-node-Lokalität:} i-nodes nahe bei Datenblöcken
+\item \textbf{Reorganisation:} Zusammenhängende Speicherung
+\item \textbf{Zylindergruppen:} Aufteilen der Platte in Bereiche
+\end{itemize}
+
+\subsection{Zugriffsmethoden}
+\textbf{Zugriffsstrukturen:}
+\begin{itemize}
+\item \textbf{Sequentiell:} Wie verknüpfte Liste, nur Anhängen möglich
+\item \textbf{Direktzugriff statisch:} Array-artig, direkter Zugriff über Index
+\item \textbf{Direktzugriff dynamisch:} Index-sequentiell mit Schlüsseln
+\end{itemize}
+
+\textbf{Speichereinheiten:}
+\begin{itemize}
+\item \textbf{Zeichen:} Byteweise, linearer Adressraum
+\item \textbf{Sätze:} Strukturierte Einheiten
+  \begin{itemize}
+  \item Feste vs. variable Länge
+  \item Satzende-Markierung oder Längenfeld
+  \end{itemize}
+\end{itemize}
+
+\subsection{Magnetbänder}
+\textbf{Eigenschaften:}
+\begin{itemize}
+\item \textbf{Sequentieller Zugriff:} Nur vorwärts/rückwärts
+\item \textbf{Variable Blockgrößen} möglich
+\item \textbf{Gaps:} Lücken zwischen Blöcken nötig
+\item \textbf{Wechselbare Datenträger}
+\end{itemize}
+
+\textbf{Anwendung:}
+\begin{itemize}
+\item \textbf{Backup:} Günstig pro MB, langsamer Zugriff OK
+\item \textbf{Archivierung:} Langzeitspeicherung
+\item \textbf{Tape Libraries:} Automatische Bandwechsler
+\end{itemize}
+
+\textbf{Operationen:}
+\begin{itemize}
+\item \texttt{read/write next/previous block}
+\item \texttt{skip n blocks forward/backward}
+\item \texttt{rewind to beginning}
 \end{itemize}
 
 \section{KE 6: Sicherheit}

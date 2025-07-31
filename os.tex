@@ -1526,18 +1526,475 @@ FAT[3] = 27, FAT[27] = 19, FAT[19] = nil
 
 \section{KE 7: Kommandosprachen}
 
-\subsection{Kommandointerpreter (Shell)}
+\subsection{Das Starten von Prozessen}
+\textbf{Warum Kommandosprachen?}
 \begin{itemize}
-\item Schnittstelle zwischen Benutzer und BS
-\item Startet Prozesse (typisch: \texttt{fork()} \& \texttt{exec()})
-\item Verwaltet die Prozessumgebung (Variablen, offene Dateien)
-\item \textbf{I/O-Umlenkung:}
+\item \textbf{Kommandosprache (Command Language):} Sprache zur Formulierung von Aufträgen an den Rechner
+\item \textbf{Hauptaufgabe:} Programme laden, Prozesse kreieren und starten
+\item Nicht nur durch Kommandointerpreter möglich, sondern durch entsprechende Systemaufrufe von jedem Prozess aus
+\end{itemize}
+
+\textbf{Aufgaben beim Prozessstart:}
+\begin{itemize}
+\item Neuen Prozess erzeugen und ladbares Programm in Arbeitsspeicher laden
+\item Parameter mitgeben (wie Prozeduraufruf)
+\item Rückgabewerte/Erfolg der Ausführung übertragen
+\item Standard-Ein-/Ausgabegeräte zuordnen
+\item Initiale Umgebung zur Verfügung stellen
+\end{itemize}
+
+\subsubsection{Systemaufrufe zum Starten und Steuern von Prozessen}
+\textbf{Prozesserzeugung - Zwei Ansätze:}
+
+\textbf{1. Direkter Ansatz (z.B. PCTE):}
+\begin{verbatim}
+process_create(name_ladb_prog, ...) : pid
+process_start(pid, ...)
+\end{verbatim}
+\begin{itemize}
+\item Erzeugt neuen Prozessdeskriptor und logischen Hauptspeicher
+\item Lädt Programm, führt Initialisierungen durch
+\item Trennung von Erzeugen und Starten ermöglicht Änderungen vor Start
+\end{itemize}
+
+\textbf{2. POSIX-Ansatz (fork + exec):}
+\begin{verbatim}
+fork() : pid  // Erzeugt vollständige Kopie des aufrufenden Prozesses
+exec(name_ladb_prog, ...)  // Lädt neues Programm in Prozess
+\end{verbatim}
+\begin{itemize}
+\item \textbf{fork():} Kopiert vollständigen logischen Hauptspeicher und Befehlszähler
+\item Unterschiedliche Rückgabewerte: Kindprozess erhält 0, Elternprozess erhält Kindprozess-ID
+\item \textbf{exec():} Ersetzt vorhandenes Programm durch neues
+\item Verschiedene exec-Varianten: execl, execv, execve, execvp
+\end{itemize}
+
+\textbf{Weitere wichtige Systemaufrufe:}
+\begin{itemize}
+\item \textbf{wait(...) : pid} - Warten auf Ende eines Kindprozesses
+\item \textbf{getuid() : uid} - Besitzer des Prozesses abfragen
+\item \textbf{getgroups() : grouplist} - Aktivierte Gruppen abfragen
+\item \textbf{kill(pid, ...)} - Prozess von außen abbrechen
+\item \textbf{exit(status)} - Prozess selbst beenden mit Rückgabewert
+\end{itemize}
+
+\textbf{Prozesshierarchien:}
+\begin{itemize}
+\item \textbf{Elternprozess:} Prozess, der anderen erzeugt hat
+\item \textbf{Kindprozess:} Erzeugter Prozess
+\item Baumartige Struktur durch Schachtelung möglich
+\item Frage: Sollen Kindprozesse automatisch beendet werden, wenn Elternprozess terminiert?
+\end{itemize}
+
+\subsubsection{Die Umgebung eines Prozesses}
+\textbf{Komponenten der Prozessumgebung:}
+
+\textbf{1. Parameter:}
+\begin{itemize}
+\item Wie Prozedurparameter in Programmiersprachen
+\item \textbf{POSIX:} Parameter als Array von Strings übergeben
+\item Beispiel: Übersetzer erhält Dateinamen für Quellcode, Bindemodul, Listing
+\end{itemize}
+
+\textbf{2. Umgebungsvariablen:}
+\begin{itemize}
+\item \textbf{Name-Wert-Paare} vom Typ String
+\item \textbf{Unterschied zu Parametern:} Allgemeine Daten/Einstellungen, selten verändert
+\item Beispiele: Benutzeridentifikation, Arbeitsverzeichnis
+\item \textbf{Zwei Ansätze:}
   \begin{itemize}
-  \item \texttt{>} leitet Ausgabe in Datei um
-  \item \texttt{<} liest Eingabe aus Datei
-  \item \texttt{|} (Pipe) leitet Ausgabe eines Prozesses als Eingabe an den nächsten weiter
+  \item \textbf{Global:} Änderungen sind systemweit sichtbar (MS-DOS, problematisch)
+  \item \textbf{Prozess-spezifisch:} Kopiert bei Prozesserzeugung, unabhängig änderbar (empfohlen)
   \end{itemize}
-\item \textbf{Shell-Skripte:} Automatisierung von Kommandoabfolgen mit Variablen und Kontrollstrukturen
+\end{itemize}
+
+\textbf{3. Offene Dateien:}
+\begin{itemize}
+\item \textbf{Dateikontrollblock:} Interne BS-Datenstruktur für offene Datei
+  \begin{itemize}
+  \item Öffnungsmodus (lesen, schreiben, anhängen)
+  \item Aktuelle Position des Dateizeigers
+  \item Nicht im logischen Adressraum, zentral verwaltet
+  \end{itemize}
+\item \textbf{Dateiidentifizierer:} Prozess-lokale Nummern (0, 1, 2, ...)
+\item \textbf{Vererbung:} Tabelle wird kopiert, nicht der Dateikontrollblock selbst
+\item Gemeinsamer Dateizeiger zwischen Eltern- und Kindprozess
+\end{itemize}
+
+\textbf{Standard-Ein-/Ausgabegeräte:}
+\begin{itemize}
+\item \textbf{Konzept:} Jedem Prozess zugeordnete virtuelle Geräte
+\item Automatisch vorhanden (müssen nicht geöffnet werden)
+\item \textbf{POSIX/MS-DOS Konvention:}
+  \begin{itemize}
+  \item 0: Standard-Eingabegerät (stdin)
+  \item 1: Standard-Ausgabegerät (stdout)
+  \item 2: Standard-Fehlermeldungen (stderr, nur POSIX)
+  \end{itemize}
+\item \textbf{Umlenkung:} Dateien statt realer Geräte verwenden
+\end{itemize}
+
+\textbf{Umlenkung von Standard-E/A-Geräten:}
+\begin{itemize}
+\item \textbf{Problem:} Gleiches Programm soll mit Geräten oder Dateien arbeiten
+\item \textbf{Lösung:} Gleiche Systemaufrufe für Standard-E/A und Dateien
+\item \textbf{Beispiel UNIX:}
+  \begin{itemize}
+  \item \texttt{sort < eindatei} - Eingabe aus Datei
+  \item \texttt{sort > ausdatei} - Ausgabe in Datei
+  \item \texttt{sort < eindatei > ausdatei} - Beides umleiten
+  \end{itemize}
+\item \textbf{dup2(di\_alt, di\_neu):} Kopiert Dateiidentifizierer
+\end{itemize}
+
+\subsection{Generelle Merkmale von Kommandosprachen}
+\textbf{Vielfalt der Kommandosprachen - Ursachen:}
+\begin{itemize}
+\item Abhängigkeit von Betriebssystemkern-Funktionen
+\item Hardware-Eigenschaften der E/A-Geräte
+\item Architektur des Betriebssystems
+\item Unterschiede zwischen textuellen und graphischen Sprachen
+\end{itemize}
+
+\textbf{Grundbegriffe:}
+\begin{itemize}
+\item \textbf{Kommando:} Aufforderung an BS, bestimmten Dienst zu verrichten
+\item \textbf{Kommandoprozedur:} Folge von Kommandos mit Ablaufsteuerung
+\item \textbf{Textuelle Form:} \texttt{<kommandoverb> <Parameterliste>}
+\item \textbf{UNIX-Format:} \texttt{kommandoverb option argumente}
+\end{itemize}
+
+\textbf{UNIX-Konventionen:}
+\begin{itemize}
+\item Kommandos in Kleinbuchstaben
+\item Optionen ändern Wirkung (z.B. \texttt{ls -l})
+\item Argumente sind Dateinamen oder Parameter
+\item Beispiel: \texttt{ls -l file1} - Lange Ausgabe für file1
+\end{itemize}
+
+\textbf{Make-Kommando (Beispiel für komplexe Kommandoprozeduren):}
+\begin{itemize}
+\item \textbf{Problem:} Abhängigkeiten zwischen Dateien in großen Programmen
+\item \textbf{Lösung:} Makefile beschreibt Abhängigkeiten und Aktionen
+\item \textbf{Funktionsprinzip:} Vergleich der Modifikationsdaten
+\item Nur notwendige Aktionen werden durchgeführt
+\end{itemize}
+
+\textbf{Makefile-Beispiel:}
+\begin{verbatim}
+all: forkdemo beeper
+
+forkdemo: forkdemo.c
+    cc -o forkdemo forkdemo.c
+
+beeper: beeper.c
+    cc -o beeper beeper.c
+\end{verbatim}
+
+\textbf{Betriebsarten:}
+\begin{itemize}
+\item \textbf{Interaktiver Betrieb:} Ein Kommando → Eingabe → Ausführung → Ergebnis
+\item \textbf{Stapelbetrieb:} Kommandoprozedur als Dateiinhalt
+\item Moderne Systeme: Einheitliche Kommandosprache für beide Modi
+\end{itemize}
+
+\textbf{Anforderungen an Kommandosprachen:}
+\begin{itemize}
+\item \textbf{Effizienz:} Vollständige und effiziente Nutzung der Rechnerleistung
+\item \textbf{Unabhängigkeit:} So weit möglich unabhängig von Betriebsart
+\item \textbf{Benutzungsfreundlichkeit:} Leicht erlernbar, konsistent, Hilfesystem
+\item \textbf{Adaptierbarkeit:} Anpassung an individuelle Bedürfnisse und Benutzertypen
+\end{itemize}
+
+\textbf{Architektonische Aspekte:}
+\begin{itemize}
+\item \textbf{Auswechselbare Kommandointerpreter:} Nicht Teil des BS-Kerns
+\item \textbf{Shell:} UNIX-Bezeichnung für Kommandointerpreter ("Schale" um Kern)
+\item \textbf{Shell-Skript:} UNIX-Bezeichnung für Kommandoprozedur
+\item Komplette Funktionalität muss über Systemaufrufe verfügbar sein
+\end{itemize}
+
+\textbf{Betriebssysteme ohne Kommandosprache:}
+\begin{itemize}
+\item Prinzipiell möglich: BS lädt immer dasselbe Programm
+\item Anwendung: Spezialrechner (Kopierer, Heizkessel, etc.)
+\item Für Mehrzweck-Rechner: Kommandosprache unverzichtbar
+\end{itemize}
+
+\subsection{Kommandos}
+\subsubsection{Phasen der Kommandoverarbeitung}
+\textbf{Vier Phasen:}
+\begin{enumerate}
+\item \textbf{Eingabe}
+\item \textbf{Vorverarbeitung des Kommandoverbs}
+\item \textbf{Vorverarbeitung der Parameterliste}
+\item \textbf{Ausführung des Kommandos}
+\end{enumerate}
+
+\subsubsection{Ausführung von Kommandos}
+\textbf{Interne vs. Externe Kommandos:}
+
+\textbf{Intern:} 
+\begin{itemize}
+\item Ausführung innerhalb des Kommandointerpreters
+\item Beispiele: \texttt{cd}, \texttt{history}
+\item Notwendig für Kommandos, die Interpreter-Zustand ändern
+\end{itemize}
+
+\textbf{Extern (als Kindprozess):}
+\begin{itemize}
+\item Eigenständiger Kindprozess
+\item Beispiel: \texttt{date}, \texttt{ls}
+\item Höherer Aufwand durch Prozesserzeugung
+\item Aber: Isolierter Prozesszustand
+\end{itemize}
+
+\textbf{Ausführung von Kommandoprozeduren:}
+\begin{itemize}
+\item \textbf{Extern:} Kindprozess mit Kommandointerpreter, Datei als stdin
+\item \textbf{Intern:} UNIX \texttt{source} Kommando
+\item Extern ermöglicht Rekursion und andere Interpreter
+\item Intern notwendig für Änderungen am aufrufenden Interpreter
+\end{itemize}
+
+\subsubsection{Eingabe von Kommandos}
+\textbf{Textuelle vs. Graphische Eingabe:}
+
+\textbf{Textuelle Kommandos:}
+\begin{itemize}
+\item Alphanumerische Zeichen über Tastatur
+\item Beispiel: \texttt{rm a.out}
+\item Editiervorgang mit Cursor-Bewegung, Einfügen, Löschen
+\end{itemize}
+
+\textbf{Graphische Kommandos:}
+\begin{itemize}
+\item Erfordern Graphikfähiges Ausgabemedium und Zeigegeräte
+\item Beispiel: Drag \& Drop zum Löschen
+\item Escape-Sequenzen für Maus-/Tastatureingaben
+\item Komplexere Zustandsverwaltung erforderlich
+\end{itemize}
+
+\textbf{Hilfen bei interaktiver Eingabe:}
+
+\textbf{Abkürzungen:}
+\begin{itemize}
+\item Ausreichend langes eindeutiges Präfix
+\item Automatische Ergänzung bei Eindeutigkeit
+\item Kurz- und Langformen möglich
+\end{itemize}
+
+\textbf{Wiederholung früherer Kommandos:}
+\begin{itemize}
+\item Cursor-Tasten für Kommando-History
+\item \texttt{!n} für n-tes Kommando (C-Shell)
+\item \texttt{history} Kommando listet vergangene Kommandos
+\end{itemize}
+
+\subsubsection{Vorverarbeitung des Kommandoverbs}
+\textbf{Erweiterbare Kommandointerpreter:}
+\begin{itemize}
+\item Drei Mechanismen: Ladbares Programm, Kommandoprozedur, direkt im Interpreter
+\item \textbf{Moderne Systeme:} Einheitliche Syntax für alle drei Arten
+\item Unterscheidung durch Dateiname-Suffix oder Dateiinhalt-Inspektion
+\item \textbf{Vorteil:} Leicht erweiterbar durch neue Programme/Skripte
+\end{itemize}
+
+\textbf{Suchpfade:}
+\begin{itemize}
+\item \textbf{Problem:} Programme in verschiedenen Verzeichnissen organisiert
+\item \textbf{Lösung:} PATH-Variable mit Liste von Verzeichnissen
+\item Suche in angegebener Reihenfolge
+\item \textbf{Optimierung:} Pufferung in Zuordnungstabelle (rehash notwendig)
+\end{itemize}
+
+\textbf{Aliase:}
+\begin{itemize}
+\item \textbf{Zweck:} Einfache Umbenennung oder Default-Optionen
+\item Textueller Ersatz vor Programmstart
+\item Schachtelung möglich (Zyklenerkennung notwendig)
+\item \textbf{Beispiel:} \texttt{alias dir=ls}
+\end{itemize}
+
+\subsubsection{Verarbeitung der Parameter}
+\textbf{Parameterübergabeverfahren:}
+
+\textbf{Stellungsparameter:}
+\begin{itemize}
+\item Position bestimmt Zuordnung (wie in Programmiersprachen)
+\item i-ter aktueller Parameter → i-ter formaler Parameter
+\item Gut für kurze Parameterlisten
+\end{itemize}
+
+\textbf{Namensparameter:}
+\begin{itemize}
+\item Explizite Benennung: \texttt{option7=yes}
+\item Beliebige Reihenfolge möglich
+\item Nicht angegebene Parameter haben Default-Werte
+\item Gut bei vielen optionalen Parametern
+\end{itemize}
+
+\textbf{Mengen von Dateien als Parameter:}
+\begin{itemize}
+\item \textbf{Beispiel:} \texttt{lpr file1.pr file2.pr file3.pr}
+\item Variable Parameterlisten-Länge erforderlich
+\item \textbf{Wild Card Characters} für Pattern-Matching:
+  \begin{itemize}
+  \item \texttt{*} - beliebige Zeichenfolge
+  \item \texttt{?} - ein beliebiges Zeichen  
+  \item \texttt{[ ]} - eines der angegebenen Zeichen
+  \end{itemize}
+\item \textbf{Beispiel:} \texttt{lpr *.pr} für alle .pr-Dateien
+\end{itemize}
+
+\textbf{Expansion der Sonderzeichen:}
+\begin{itemize}
+\item \textbf{UNIX-Shells:} Expansion im Kommandointerpreter
+  \begin{itemize}
+  \item Vorteil: Einheitliche Bedeutung, einmalige Implementierung
+  \item Nachteil: Probleme mit noch nicht existierenden Dateien
+  \end{itemize}
+\item \textbf{MS-DOS:} Expansion im Anwendungsprogramm
+  \begin{itemize}
+  \item Vorteil: Flexibler für spezielle Anwendungen
+  \item Nachteil: Inkonsistente Implementierungen
+  \end{itemize}
+\end{itemize}
+
+\textbf{Kommandosubstitution:}
+\begin{itemize}
+\item Ersetzen eines Kommandos durch seine Ausgabe
+\item \textbf{Notation:} \texttt{`command`} oder \texttt{\$(command)}
+\item \textbf{Beispiel:} \texttt{set prompt = \textbackslash\$username@`hostname`:}
+\item Ermöglicht sehr mächtige Textverarbeitung in Skripten
+\end{itemize}
+
+\subsection{Variablen und Kontrollstrukturen}
+\subsubsection{Variablen}
+\textbf{Shell-Variablen:}
+\begin{itemize}
+\item \textbf{Typ:} Meist nur Strings (Text über bestimmtem Alphabet)
+\item Deklaration jederzeit möglich
+\item Ganzzahl-Operationen oft möglich wenn Wert numerisch
+\item \textbf{Array-ähnlich:} Zugriff auf n-tes Wort mit \texttt{variablenname[n]}
+\end{itemize}
+
+\textbf{Wertzuweisung:}
+\begin{itemize}
+\item \textbf{Beispiel:} \texttt{set variablenname = neuerwert}
+\item Intern ausgeführt (kein Kindprozess)
+\end{itemize}
+
+\textbf{Wertverwendung:}
+\begin{itemize}
+\item \textbf{C-Shell:} \texttt{\$variablenname}
+\item Textueller Ersatz bei Kommandoverarbeitung
+\item \textbf{Beispiel:} 
+\begin{verbatim}
+set XY = /usr/local/XY
+$XY/load $XY/fonts $XY/init
+\end{verbatim}
+\end{itemize}
+
+\textbf{Vordefinierte Variablen (C-Shell):}
+\begin{itemize}
+\item \textbf{argv:} Parameter beim Shell-Aufruf
+\item \textbf{cwd:} Aktuelles Arbeitsverzeichnis
+\item \textbf{filec:} Schalter für automatische Dateinamen-Ergänzung
+\item \textbf{home:} Heimverzeichnis des Benutzers
+\item \textbf{path:} Suchpfad für ausführbare Dateien
+\end{itemize}
+
+\textbf{Shell-Variablen vs. Umgebungsvariablen:}
+\begin{itemize}
+\item \textbf{Shell-Variablen:} Nur lokal im Kommandointerpreter
+\item \textbf{Umgebungsvariablen:} Werden an Kindprozesse vererbt
+\item Kopieren zwischen beiden möglich
+\end{itemize}
+
+\subsubsection{Ablaufsteuerung}
+\textbf{Kontrollstrukturen wie in Programmiersprachen:}
+\begin{itemize}
+\item Schleifen, Verzweigungen, Prozeduraufrufe
+\item Oft modifiziert für Kommando-spezifische Bedürfnisse
+\end{itemize}
+
+\textbf{For-Schleife (Bourne-Shell):}
+\begin{verbatim}
+for i in *
+do
+  cp $i $i.alt
+done
+\end{verbatim}
+\begin{itemize}
+\item Kopiert jede Datei im aktuellen Verzeichnis
+\item \texttt{*} wird in Dateinamen expandiert
+\item Hinter \texttt{in} kann auch explizite Liste stehen
+\end{itemize}
+
+\textbf{Erweiterte For-Schleife mit Kommandosubstitution:}
+\begin{verbatim}
+for i in `grep kap namensliste`
+do
+  cp $i $i.alt
+done
+\end{verbatim}
+\begin{itemize}
+\item Nur Dateien, deren Name "kap" enthält und in namensliste steht
+\item \texttt{grep} findet Zeilen mit "kap"
+\item Kommandosubstitution liefert Dateinamen-Liste
+\end{itemize}
+
+\textbf{Die Mächtigkeit der Kommandosprachen:}
+\begin{itemize}
+\item UNIX-Shells erreichen Mächtigkeit konventioneller Programmiersprachen
+\item Kommandosubstitution ermöglicht Integration beliebiger Programme
+\item \textbf{Sprachverbund:} Kommandosprache + C + Textprozessoren (grep, awk, sed)
+\item Entwicklung großer Systeme möglich (besonders Prototypen)
+\end{itemize}
+
+\subsubsection{Softwaretechnische Aspekte}
+\textbf{Entwicklung von Kommandoprozeduren:}
+\begin{itemize}
+\item Prinzipiell wie normale Programmentwicklung
+\item Softwaretechnik-Methoden anwendbar
+\item \textbf{Problem:} Meist kleine Prozeduren (wenige hundert Zeilen)
+\item Aber moderne Kommandosprachen ermöglichen große Systeme
+\end{itemize}
+
+\textbf{Entwicklung der Kommandoprozeduren:}
+\begin{itemize}
+\item Früher nur kleine, lineare Skripte
+\item Heute: Vollwertige Entwicklungsumgebung möglich
+\item BS wird zur Software-Entwicklungsumgebung
+\item Integration verschiedener Sprachen in einem System
+\end{itemize}
+
+\textbf{Performance-Überlegungen:}
+\begin{itemize}
+\item Interpretative Abarbeitung langsamer als übersetzte Programme
+\item Aber: Sehr schnelle Entwicklung und einfache Änderungen
+\item Gut für Prototypen und nicht performance-kritische Anwendungen
+\end{itemize}
+
+\subsection{Zusammenfassung}
+\textbf{Kernpunkte der Kommandosprachen:}
+\begin{itemize}
+\item \textbf{Prozesserzeugung:} Systemaufrufe wie fork/exec oder process\_create
+\item \textbf{Prozessumgebung:} Parameter, Umgebungsvariablen, offene Dateien
+\item \textbf{I/O-Umlenkung:} Standard-E/A auf Dateien umleiten
+\item \textbf{Kommandoverarbeitung:} Eingabe → Vorverarbeitung → Ausführung
+\item \textbf{Erweiterbarkeit:} Suchpfade, Aliase, externe Programme als Kommandos
+\item \textbf{Textverarbeitung:} Wild Cards, Kommandosubstitution
+\item \textbf{Programmiersprachen-Features:} Variablen, Kontrollstrukturen
+\end{itemize}
+
+\textbf{Moderne Kommandosprachen:}
+\begin{itemize}
+\item Erreichen Mächtigkeit konventioneller Programmiersprachen
+\item Ermöglichen Entwicklung komplexer Systeme
+\item Integration verschiedener Werkzeuge und Sprachen
+\item Wichtige Komponente moderner Betriebssysteme
 \end{itemize}
 
 \end{multicols*}

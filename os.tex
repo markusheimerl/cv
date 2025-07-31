@@ -334,31 +334,192 @@
 
 \section{KE 3: Hauptspeicherverwaltung}
 
-\subsection{Grundproblem \& MMU}
-Logische Adressen eines Prozesses auf physische Adressen im RAM abbilden. Erledigt von der \textbf{Memory Management Unit (MMU)}.
-
-\subsection{Techniken}
-\textbf{Zusammenhängende Zuweisung:}
+\subsection{Grundlagen}
+\textbf{Logische vs. Physische Adressen:}
 \begin{itemize}
-\item MFT (Feste Partitionen): → \textbf{interne} Fragmentierung
-\item MVT (Variable Partitionen): → \textbf{externe} Fragmentierung
+\item \textbf{Physische Adresse:} Reale Adresse einer Speicherzelle im RAM
+\item \textbf{Logische/Virtuelle Adresse:} Vom Programm erzeugte Adresse, hardware-unabhängig
+\item \textbf{MMU (Memory Management Unit):} Hardware zwischen CPU und Hauptspeicher für Adressumsetzung
 \end{itemize}
 
-\textbf{Paging (Seitenorientiert):}
+\textbf{Übersetzer, Binder und Lader:}
 \begin{itemize}
-\item Physischer Speicher → \textbf{Seitenrahmen (Frames)}
-\item Logischer Speicher → \textbf{Seiten (Pages)}
-\item \textbf{Seitentabelle} pro Prozess bildet Pages auf Frames ab
-\item Löst externe Fragmentierung
+\item \textbf{Quellprogramm-Modul} → \textbf{Compiler} → \textbf{Bindemodul} → \textbf{Binder} → \textbf{Lademodul} → \textbf{Lader} → \textbf{Geladenes Programm}
+\item \textbf{Absolute Adressen:} Binder kennt logischen Adressraum bereits
+\item \textbf{Relative Adressen:} Lader addiert Startadresse zu relativen Adressen
+\item \textbf{Basisregister-Adressierung:} (Registernummer, Offset) für verschiebbare Programme
+\item \textbf{Dynamisches Binden:} Bindung zur Laufzeit, Module werden bei Bedarf nachgeladen
 \end{itemize}
 
-\textbf{Virtueller Speicher:}
+\subsection{Einfache zusammenhängende Speicherzuweisung}
+\textbf{Konzept:} Ein Prozess = ein zusammenhängender Speicherbereich
 \begin{itemize}
-\item \textbf{Konzept:} Log. Adressraum > phys. Speicher. Teile des Prozesses liegen auf Festplatte (Swap-Bereich)
-\item \textbf{Mechanismus: Demand Paging.} Seite wird erst bei Bedarf geladen
-\item \textbf{Seitenfehler (Page Fault):} Zugriff auf eine nicht geladene Seite
-\item \textbf{Seitenauslagerung:} Wenn kein Rahmen frei ist, wird eine Seite ersetzt (z.B. via \textbf{LRU}-Algorithmus)
-\item \textbf{Thrashing:} System ist nur noch am Seiten-Swappen, weil Prozesse zu wenige Frames haben
+\item Betriebssystemkern ab Adresse 0
+\item Anwenderprogramm ab Adresse a
+\item \textbf{Speicherschutz:} Grenzregister verhindert Zugriff auf Adressen $<$ a
+\item \textbf{Swapping:} Kompletter Prozess wird auf Sekundärspeicher aus-/eingelagert
+\end{itemize}
+
+\subsection{Mehrfache zusammenhängende Speicherzuweisung}
+\textbf{MFT (Multiprogramming with Fixed Tasks):}
+\begin{itemize}
+\item Feste Segmentgrößen beim Systemstart
+\item \textbf{Interne Fragmentierung:} Zugewiesener Speicher $>$ Bedarf
+\item \textbf{Best-available-fit:} Kleinstes ausreichendes Segment wählen
+\item \textbf{Best-fit-only:} Nur Segmente verwenden, die nicht wesentlich größer sind
+\end{itemize}
+
+\textbf{MVT (Multiprogramming with Variable Tasks):}
+\begin{itemize}
+\item Variable Segmentgrößen je nach Bedarf
+\item \textbf{Externe Fragmentierung:} Viele kleine, nicht nutzbare Lücken
+\item \textbf{Lückenmanagement} erforderlich
+\end{itemize}
+
+\textbf{Speicherplatzvergabestrategien:}
+\begin{itemize}
+\item \textbf{First Fit:} Erste ausreichend große Lücke
+\item \textbf{Next Fit:} Wie First Fit, aber ab letzter Zuteilung suchen
+\item \textbf{Best Fit:} Kleinste ausreichend große Lücke (erzeugt kleine Restlücken)
+\item \textbf{Worst Fit:} Größte Lücke wählen (große Restlücke bleibt nutzbar)
+\item \textbf{Buddy-Verfahren:} Nur 2er-Potenzen, interne Fragmentierung, aber effiziente Verwaltung
+\end{itemize}
+
+\textbf{Kompaktifizierung (Garbage Collection):}
+\begin{itemize}
+\item Verschieben belegter Bereiche zur Zusammenlegung freier Bereiche
+\item Hoher Aufwand, daher selten verwendet
+\end{itemize}
+
+\subsection{Nichtzusammenhängende Speicherzuweisung}
+\textbf{Segmentierung:}
+\begin{itemize}
+\item \textbf{Trennung von Programm und Daten} in separate Segmente
+\item Logische Adresse = (Segmentnummer, Relativadresse)
+\item \textbf{Basisregister pro Segment} für Adressumsetzung
+\item \textbf{Wiedereintrittsfähige Programme (Reentrant Code):} Ein Programmsegment für mehrere Prozesse
+\item \textbf{Shared Libraries:} Gemeinsam benutzte Bindemodule
+\end{itemize}
+
+\subsection{Paging (Seitenorientierte Speicherverwaltung)}
+\textbf{Grundkonzept:}
+\begin{itemize}
+\item \textbf{Seiten (Pages):} Logischer Adressraum in gleichgroße Blöcke (typisch 4 KB)
+\item \textbf{Seitenrahmen (Page Frames):} Physischer Speicher in gleichgroße Blöcke
+\item \textbf{Seitentabelle:} Bildet Seiten auf Seitenrahmen ab
+\item Logische Adresse = (Seitennummer s, Offset d) mit s = v div p, d = v mod p
+\end{itemize}
+
+\textbf{Adressumsetzung:}
+\begin{itemize}
+\item Physische Adresse r = ST[s] × p + d
+\item \textbf{TLB (Translation Lookaside Buffer):} Schneller Assoziativspeicher für häufig benutzte Seitentabellen-Einträge
+\item \textbf{TLB Hit:} Eintrag im TLB gefunden (schnell)
+\item \textbf{TLB Miss:} Zugriff auf Seitentabelle im Hauptspeicher (langsam)
+\end{itemize}
+
+\textbf{Zusätzliche Funktionen:}
+\begin{itemize}
+\item \textbf{Individueller Speicherschutz:} Protection-Bits pro Seite (read/write/execute)
+\item \textbf{Shared Memory:} Seiten in mehreren Adressräumen einblenden
+\item \textbf{Memory-Mapped Files:} Dateiseiten in virtuellen Speicher einblenden
+\end{itemize}
+
+\textbf{Implementierung:}
+\begin{itemize}
+\item \textbf{Mehrstufige Seitentabellen:} Bei großen Adressräumen (z.B. 32 Bit)
+\item \textbf{Seitenrahmentabelle:} Globale Tabelle über Zustand aller Frames
+\end{itemize}
+
+\subsection{Virtueller Hauptspeicher}
+\textbf{Demand Paging:}
+\begin{itemize}
+\item \textbf{Konzept:} Seiten werden erst bei Bedarf geladen, nicht alle Seiten eines Prozesses sind im RAM
+\item \textbf{Seitenfehler (Page Fault):} Zugriff auf nicht geladene Seite → Trap → Einlagerung
+\item \textbf{Present-Bit:} Zeigt an, ob Seite im Hauptspeicher liegt
+\item \textbf{Dirty Bit:} Zeigt an, ob Seite seit Einlagerung verändert wurde
+\item \textbf{Swap-Bereich:} Reservierter Festplattenbereich für ausgelagerte Seiten
+\end{itemize}
+
+\textbf{Kosten eines Seitenfehlers:}
+\begin{itemize}
+\item Festplattenzugriff $\approx 10^5$ CPU-Instruktionen
+\item Seitenfehler dürfen nur sehr selten auftreten ($< 10^{-4}$)
+\end{itemize}
+
+\subsection{Seitenauslagerungsstrategien}
+\textbf{Optimale Strategie (theoretisch):}
+\begin{itemize}
+\item Lagere Seite aus, die am weitesten in der Zukunft benutzt wird
+\item Nicht implementierbar (Hellsehen unmöglich)
+\item Dient als Vergleichsmaßstab
+\end{itemize}
+
+\textbf{LRU (Least Recently Used):}
+\begin{itemize}
+\item Lagere am längsten unbenutzte Seite aus
+\item Beste praktische Approximation der optimalen Strategie
+\item \textbf{Problem:} Aufwändige exakte Implementierung
+\end{itemize}
+
+\textbf{Approximation von LRU:}
+\begin{itemize}
+\item \textbf{Zugriffsbits (Referenced Bits):} Hardware setzt Bit bei jedem Zugriff
+\item \textbf{Schieberegister:} Sammelt Zugriffsmuster über mehrere Perioden
+\item \textbf{Second Chance:} FIFO + Zugriffsbits, gibt Seiten zweite Chance
+\item \textbf{Clock-Algorithmus:} Zirkuläre Liste + Uhrzeiger, effiziente Implementierung von Second Chance
+\end{itemize}
+
+\textbf{Einfachere Strategien:}
+\begin{itemize}
+\item \textbf{FIFO:} Längste Zeit im Speicher → Problem: kann auch aktive Seiten auslagern
+\item \textbf{Nachteile:} Belady-Anomalie möglich (mehr Frames → mehr Seitenfehler)
+\end{itemize}
+
+\subsection{Zuweisungsstrategien}
+\textbf{Lokalitäten:}
+\begin{itemize}
+\item \textbf{Lokalitätsprinzip:} Programme greifen zeitlich/räumlich konzentriert auf Speicher zu
+\item \textbf{Lokalität:} Menge von Seiten, die über kurzen Zeitraum häufig benutzt werden
+\item Beispiele: Schleifen, sequentielle Datenverarbeitung, zusammenhängende Datenstrukturen
+\end{itemize}
+
+\textbf{Arbeitsmengenstrategie (Working Set):}
+\begin{itemize}
+\item \textbf{Arbeitsmenge:} Seiten, die "in letzter Zeit" benutzt wurden
+\item \textbf{Fenster:} Betrachteter Zeitraum ($\approx$ 10.000 Zugriffe)
+\item \textbf{Strategie:} Jedem Prozess so viele Frames zuteilen, wie Arbeitsmenge groß ist
+\item Bei Seitenfehler: Weiteren Frame zuteilen
+\item Seite fällt aus Arbeitsmenge: Frame entziehen
+\end{itemize}
+
+\textbf{Seitenfehler-Frequenz-Algorithmus (PFF):}
+\begin{itemize}
+\item Misst Zeit t zwischen Seitenfehlern eines Prozesses
+\item Wenn t $\leq$ T: Prozess braucht mehr Frames
+\item Wenn t $>$ T: Alle Seiten mit R-Bit = 0 auslagern
+\end{itemize}
+
+\subsection{Scheduling bei virtuellem Speicher}
+\textbf{Thrashing (Seitenflattern):}
+\begin{itemize}
+\item System produziert nur noch Seitenfehler, kaum produktive Arbeit
+\item \textbf{Ursache:} Summe aller Arbeitsmengen $>$ physischer Speicher
+\item \textbf{Lösung:} Weniger Prozesse parallel ausführen
+\end{itemize}
+
+\textbf{Scheduling-Aspekte:}
+\begin{itemize}
+\item Nur so viele Prozesse im Zustand "bereit", dass ihre Arbeitsmengen in den RAM passen
+\item Bei Speichermangel: Prozesse komplett stilllegen (alle Seiten auslagern)
+\item Vor Reaktivierung: Arbeitsmenge wieder einlagern (Prepaging)
+\end{itemize}
+
+\textbf{Benutzergesteuerte Speicherverwaltung:}
+\begin{itemize}
+\item Programme können Hinweise auf Zugriffsmuster geben
+\item Beispiel: Sequentielle Verarbeitung → Seiten schnell wieder auslagern
+\item Wichtige Datenstrukturen → bevorzugt im Speicher halten
 \end{itemize}
 
 \section{KE 4: Synchronisation \& Deadlocks}

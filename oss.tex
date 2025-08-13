@@ -65,20 +65,19 @@
 \textbf{Threads:} Teilen Code/Daten, eigener Stack/Register
 
 \section{Speicherverwaltung}
-\textbf{Paging:} Logische Seiten → Physische Frames
+\textbf{Paging:} Speicher in gleich große Blöcke aufteilen
 \begin{itemize}
-\item Seitentabelle für Adressumsetzung
-\item TLB als Hardware-Cache
+\item Logische Seiten → Physische Frames (beliebige Zuordnung)
+\item Seitentabelle: Übersetzung Seite X → Frame Y
+\item Translation Lookaside Buffer (TLB): Hardware-Cache für häufige Übersetzungen (schneller!)
 \end{itemize}
-
-\textbf{Virtueller Speicher:}
+\textbf{Virtueller Speicher:} Programme größer als RAM erlauben
 \begin{itemize}
-\item Demand Paging: Laden bei Bedarf
-\item Page Fault: Zugriff auf ausgelagerte Seite
-\item Replacement: LRU (optimal), FIFO, Clock
-\item Thrashing: Permanente Page Faults
+\item Demand Paging: Seiten nur bei Bedarf in RAM laden
+\item Page Fault: Zugriff auf ausgelagerte Seite → von Festplatte holen
+\item Replacement bei vollem RAM: LRU (am längsten unbenutzt), FIFO, Clock
+\item Thrashing: System nur noch mit Seitenwechsel beschäftigt
 \end{itemize}
-
 \textbf{Formel:} Phys. Adresse = Frame × PageSize + Offset
 
 \section{Synchronisation}
